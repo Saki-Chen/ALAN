@@ -1,0 +1,15 @@
+﻿使用说明
+
+master线是稳定版本
+debuging线用于测试
+devoloping线是当前开发版本
+
+以上三线长期存在
+
+有新功能要开，比如现在在做camshift，就开一个线camshift线
+有多少新功能要开就开几个线
+功能都做好了再合并到devoloping
+要测试就从devoloping合并一个到debuging
+测试稳定了再合并到master
+
+所有文本用UTF-8编码，否则GiHub上看到乱码
