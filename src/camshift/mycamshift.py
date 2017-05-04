@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-  
 import cv2
 import numpy as np
 import copy  
@@ -78,6 +79,8 @@ class mycamshift(object):
 class App(object):
     def __init__(self, video_src):
         self.cam = video.create_capture(video_src)
+        self.cam.resolution=(1280,720)
+        self.cam.framerate=60
         ret, self.frame = self.cam.read()
         self.drag_start = None
         self.list_camshift=[]
@@ -131,6 +134,7 @@ class App(object):
                 #    cv2.imshow('TUCanshift',x.go_once(self.frame))
                 cv2.imshow('TUCanshift',self.frame)
                 for i in xrange(len(self.list_camshift)):
+                    #cv2.imshow('%s%s' % ('cam',str(i)),cv2.resize(self.list_camshift[i].go_once(self.frame),(640,480),interpolation=cv2.INTER_CUBIC))
                     cv2.imshow('%s%s' % ('cam',str(i)),self.list_camshift[i].go_once(self.frame))           
             else:
                 cv2.imshow('TUCanshift',self.frame)
