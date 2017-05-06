@@ -28,6 +28,6 @@ class mypicamera(PiCamera):
 
 def create_capture(source = 0):
     pcam=mypicamera(source)
-    pcam.resolution=(1280,720)
-    pcam.framerate=60
-    return mypicamera(source)
+    pcam.resolution=(640,480)
+    pcam.framerate=30
+    return pcam

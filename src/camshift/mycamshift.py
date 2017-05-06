@@ -108,9 +108,10 @@ class App(object):
     def run(self):
         while True:  
             ret, self.frame = self.cam.read()
-            hsv,mask=mycamshift.filte_color(self.frame)
-            if self.newcamshift is not None and self.newcamshift.preProcess(hsv,mask,self.selection):
-                cv2.imshow(str(ll),self.newcamshift.getHist())   
+            if self.newcamshift is not None:
+                hsv,mask=mycamshift.filte_color(self.frame)
+                if self.newcamshift.preProcess(hsv,mask,self.selection):
+                    cv2.imshow(str(ll),self.newcamshift.getHist())   
 
             self.lock=False
             ll=len(self.list_camshift) 
@@ -119,8 +120,9 @@ class App(object):
                 for x in self.list_camshift:
                     track_box.append(x.go_once(hsv,mask))             
 
-                if self.show_backproj:
-                    self.frame=self.list_camshift[ll-1].prob[...,np.newaxis]
+                prob=self.list_camshift[ll-1].prob
+                if self.show_backproj and prob is not None:
+                    self.frame=prob[...,np.newaxis]
 
                 for x in track_box:
                     try:
@@ -135,7 +137,7 @@ class App(object):
                 cv2.bitwise_not(vis_roi, vis_roi)
               
             cv2.imshow('TUCanshift',self.frame)
-            ch = cv2.waitKey(5)
+            ch = cv2.waitKey(2)
             if ch == 27:
                 break
             if ch==ord('b'):
