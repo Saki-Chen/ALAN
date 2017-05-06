@@ -1,4 +1,6 @@
-﻿from picamera import PiCamera
+﻿# -*- coding: UTF-8 -*-  
+#树莓派用，使用时请改名video
+from picamera import PiCamera
 import numpy as np
 class mypicamera(PiCamera):
     def __init__(
@@ -15,23 +17,17 @@ class mypicamera(PiCamera):
             self.capture(img,format, use_video_port, resize, splitter_port, bayer, **options)
         except:
             raise Exception('摄像头读取失败')
-        #self.capture(img,format, use_video_port, resize, splitter_port, bayer, **options)
         else:
             img=img.reshape((self.resolution[1],self.resolution[0],3))
             flag=not flag
         return (flag,img)
-
-    #def read(self):
-    #    self.resolution =(640,480)
-    #    self.framerate=30
-    #    img=np.empty((480*640*3,), dtype=np.uint8)
-    #    self.capture(img,'bgr',use_video_port=True)
-    #    img=img.reshape((480, 640,3))
-    #    return img
 
     def release(self):
         self.close()
         del self
 
 def create_capture(source = 0):
+    pcam=mypicamera(source)
+    pcam.resolution=(1280,720)
+    pcam.framerate=60
     return mypicamera(source)

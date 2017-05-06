@@ -79,8 +79,6 @@ class mycamshift(object):
 class App(object):
     def __init__(self, video_src):
         self.cam = video.create_capture(video_src)
-        self.cam.resolution=(1280,720)
-        self.cam.framerate=60
         ret, self.frame = self.cam.read()
         self.drag_start = None
         self.list_camshift=[]
@@ -127,7 +125,6 @@ class App(object):
                 x0, y0, x1, y1 = self.selection
                 vis_roi = self.frame[y0:y1, x0:x1]
                 cv2.bitwise_not(vis_roi, vis_roi)
-                self.frame[vis_roi == 0] = 0
                 cv2.imshow('TUCanshift',self.frame)       
             elif ll>0:
                 #for x in self.list_camshift:  
