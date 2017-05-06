@@ -7,8 +7,8 @@ class MyUdp(object):
                   start='\xAA\xBB\x55\x01\x04\x00\x77',
                   speed_up='\xAA\xBB\x55\x01\x04\x00\x88')
 
-    def __init__(self,host,port):
-        self.address = (host, port)  
+    def __init__(self):
+        #self.address = (host, port)  
         self.__udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
         #self.__udp.bind(self.address)      
     
@@ -19,8 +19,10 @@ class MyUdp(object):
     def recv_message(self):
         return self.__udp.recvfrom(1024)
 
-    #def my_close():
-    #    pass
+    def close(self):
+        self.__udp.close
+        del self
+
     @staticmethod
     def getbyte(order,val):
         data=struct.pack('>H',val)
@@ -38,7 +40,7 @@ class MyUdp(object):
 
 
 if __name__=='__main__':
-    mdp=MyUdp('192.168.40.221',8899)
+    mdp=MyUdp()
     while True:
         input = raw_input()  
         if not input:  
