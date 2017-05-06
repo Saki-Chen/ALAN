@@ -108,8 +108,8 @@ class App(object):
     def run(self):
         while True:  
             ret, self.frame = self.cam.read()
+            hsv,mask=mycamshift.filte_color(self.frame)
             if self.newcamshift is not None:
-                hsv,mask=mycamshift.filte_color(self.frame)
                 if self.newcamshift.preProcess(hsv,mask,self.selection):
                     cv2.imshow(str(ll),self.newcamshift.getHist())   
 
