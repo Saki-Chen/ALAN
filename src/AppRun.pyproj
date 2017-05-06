@@ -21,6 +21,9 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="camshift\analyze.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="camshift\mycamshift.py" />
     <Compile Include="camshift\video.py" />
     <Compile Include="camshift\videoforraspberry.py" />

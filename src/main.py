@@ -1,9 +1,12 @@
 # -*- coding: UTF-8 -*- 
 import cv2
 import numpy as np
-from camshift.mycamshift import mycamshift
 # local module
+from udp.myudp import MyUdp
+from camshift.mycamshift import mycamshift
+from camshift.analyze import get_direction
 import camshift.video as video
+
 
 class App(object):
     def __init__(self, video_src):
@@ -15,6 +18,9 @@ class App(object):
         self.newcamshift=None
         self.selection=None
         self.lock=False
+        self.mdp=MyUdp()
+        #wifi模块IP
+        self.mdp.client_address=('192.168.1.103',8899)
         cv2.namedWindow('TUCanshift')
         cv2.setMouseCallback('TUCanshift', self.onmouse)
 
@@ -72,6 +78,18 @@ class App(object):
                         cv2.ellipse(self.frame, x, (0, 0, 255), 2) 
                     except:
                         print(track_box)
+                n=len(track_box)
+                if n>2:
+                    p1,p2,p3=track_box[n-3:]
+                    if p1[0] and p2[0] and p3[0]:
+                        try:
+                            mes=get_direction(p1[0],p2[0],p3[0])
+                        except:
+                            pass
+                        else:
+                            self.mdp.send_message('guidance',mes)
+                            print mes
+
             self.lock=True  
             
             if self.selection is not None:

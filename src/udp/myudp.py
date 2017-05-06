@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*- 
 import struct
 import socket  
 
@@ -5,16 +6,19 @@ class MyUdp(object):
     commands=dict(turn_right='\xAA\xBB\x55\x01\x04\x00\x66',
                   stop='\xAA\xBB\x55\x01\x04\x00\x00',
                   start='\xAA\xBB\x55\x01\x04\x00\x77',
-                  speed_up='\xAA\xBB\x55\x01\x04\x00\x88')
+                  speed_up='\xAA\xBB\x55\x01\x04\x00\x88',
+                  guidance='\xAA\xBB\x55\x01\x04\x00\x11')
 
     def __init__(self):
-        #self.address = (host, port)  
         self.__udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
+        self.client_address=None
+        #self.address = (host, port)  
         #self.__udp.bind(self.address)      
     
-    def send_message(self,order,val,address):
-        if order in MyUdp.commands:
-            self.__udp.sendto(MyUdp.getbyte(order,val),address)
+    def send_message(self,order,val=(0,0)):
+        #val=(val1,val2) val1:-128~127 val2:0~255
+        if order in MyUdp.commands and self.client_address is not None:
+            self.__udp.sendto(MyUdp.getbyte(order,val),self.client_address)
 
     def recv_message(self):
         return self.__udp.recvfrom(1024)
@@ -25,7 +29,7 @@ class MyUdp(object):
 
     @staticmethod
     def getbyte(order,val):
-        data=struct.pack('>H',val)
+        data=struct.pack('bB',val[0],val[1])
         temp='%s%s' % (MyUdp.commands[order],data)
         c=MyUdp.check(temp)
         return '%s%s' % (temp,c)
@@ -41,15 +45,17 @@ class MyUdp(object):
 
 if __name__=='__main__':
     mdp=MyUdp()
+    mdp.client_address=('192.168.1.103',8899)
     while True:
         input = raw_input()  
         if not input:  
             break  
         try:
-            input=input.split(':',1)
-            o,i=input
-            i=eval(i)
-            mdp.send_message(o,i,('192.168.40.31',8899))
+            input=input.split(',')
+            #两位数据位分开使用
+            o,i1,i2=input
+            i=(eval(i1),eval(i2))
+            mdp.send_message(o,i)
         except:
             print 'no such a order\norderlist:'
             for o in MyUdp.commands:
