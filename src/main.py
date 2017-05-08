@@ -53,13 +53,20 @@ class App(object):
         cv2.destroyWindow('%s%s' % ('cam',str(len(self.list_camshift)-1)))
         self.list_camshift.pop()
         return False
-               
+    
+    def find_light(self,frame,lower_hsv,higher_hsv):
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        mask=cv2.inRange(hsv,lower_hsv,higher_hsv)
+        mask=cv2.medianBlur(mask,5)
+        cv2.imshow('light',mask)   
+        
+            
     def run(self):
         while True:  
             ret, self.frame = self.cam.read()
-            hsv,mask=mycamshift.filte_color(self.frame)
+            hsv,mask=mycamshift.filte_color(self.frame,np.array((0.,80.,80.)),np.array((179.,255.,255.)))
             if self.newcamshift is not None:
-                if self.newcamshift.preProcess(hsv,mask,self.selection):
+                if self.newcamshift.preProcess(hsv,mask,self.selection,16):
                     cv2.imshow(str(ll),self.newcamshift.getHist())   
 
             self.lock=False

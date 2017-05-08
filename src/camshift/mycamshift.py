@@ -13,12 +13,20 @@ class mycamshift(object):
         self.prob=None
   
     @staticmethod
-    def filte_color(frame,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((180., 255., 255.))):
+    def filte_color(frame,ksize=60,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((179., 255., 255.))):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, lower_hsv, higher_hsv)
+        mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
+        mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_CLOSE,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(ksize,ksize)))
+
+        mask1 = cv2.inRange(hsv, lower_hsv, np.array((100.,higher_hsv[1],higher_hsv[2])))
+        mask2=cv2.inRange(hsv, np.array((124.,lower_hsv[1],lower_hsv[2])), higher_hsv )
+        mask=cv2.add(mask1,mask2)
+        #mask=
+        mask=cv2.medianBlur(mask,5)
+        cv2.imshow('temp',mask)
         return (hsv,mask)
 
-    def preProcess(self,hsv,mask,selection,n=32):     
+    def preProcess(self,hsv,mask,selection,n=16):     
         if selection is None:
             return False
         x0, y0, x1, y1 = selection
