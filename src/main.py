@@ -7,6 +7,52 @@ from camshift.mycamshift import mycamshift
 from camshift.analyze import get_direction
 import camshift.video as video
 
+class find_light(object):
+    def __init__(self, img):
+        x0, y0, x1, y1=(0,0,img.shape[1],img.shape[0])
+        hsv,mask=self.__pre(img,np.array((0., 0., 0.)),np.array((179., 255., 255.))) 
+        hist = cv2.calcHist( [hsv], [0], mask, [16], [0, 180] )
+        cv2.normalize(hist, hist, 0, 255, cv2.NORM_MINMAX)
+        self.__hist = hist.reshape(-1) 
+
+        
+
+    def __pre(self,frame,lower_hsv=np.array((0., 0., 221.)),higher_hsv=np.array((179., 30., 255.))):
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv,lower_hsv,higher_hsv)
+        return hsv,mask
+
+
+        if not(self.__track_window and self.__track_window[2] > 0 and self.__track_window[3] > 0):
+            raise Exception('跟踪窗未定义或者出错')
+        self.prob = cv2.calcBackProject([hsv], [0], self.__hist, [0, 180], 1)
+        self.prob &= mask
+        term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
+        track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
+        area=track_box[1][0]*track_box[1][1];
+        if(area<5):
+            print('Target %s is Lost' % self.ID)
+            self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
+        return track_box
+
+    def find_light(self,frame,lower_hsv,higher_hsv):
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        mask=cv2.inRange(hsv,lower_hsv,higher_hsv)
+        mask=cv2.medianBlur(mask,5)
+        cv2.imshow('light',mask)
+        camshift_light=mycamshift()
+        camshift_light.preProcess(hsv,mask)
+
+
+    def find_light(self,frame,lower_hsv,higher_hsv):
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        mask=cv2.inRange(hsv,lower_hsv,higher_hsv)
+        mask=cv2.medianBlur(mask,5)
+        cv2.imshow('light',mask)
+        camshift_light=mycamshift()
+        camshift_light.preProcess(hsv,mask)
+
+
 
 class App(object):
     def __init__(self, video_src):
@@ -54,11 +100,7 @@ class App(object):
         self.list_camshift.pop()
         return False
     
-    def find_light(self,frame,lower_hsv,higher_hsv):
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        mask=cv2.inRange(hsv,lower_hsv,higher_hsv)
-        mask=cv2.medianBlur(mask,5)
-        cv2.imshow('light',mask)   
+
         
             
     def run(self):

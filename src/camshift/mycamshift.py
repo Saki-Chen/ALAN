@@ -13,15 +13,14 @@ class mycamshift(object):
         self.prob=None
   
     @staticmethod
-    def filte_color(frame,ksize=60,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((179., 255., 255.))):
+    def filte_color(frame,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((179., 255., 255.)),ksize=5):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
-        mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_CLOSE,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(ksize,ksize)))
-
+        #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
+        #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(ksize,ksize)))
+        #mask_area=cv2.bitwise_not(mask_area)
         mask1 = cv2.inRange(hsv, lower_hsv, np.array((100.,higher_hsv[1],higher_hsv[2])))
         mask2=cv2.inRange(hsv, np.array((124.,lower_hsv[1],lower_hsv[2])), higher_hsv )
         mask=cv2.add(mask1,mask2)
-        #mask=
         mask=cv2.medianBlur(mask,5)
         cv2.imshow('temp',mask)
         return (hsv,mask)
