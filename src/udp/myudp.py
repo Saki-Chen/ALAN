@@ -12,8 +12,8 @@ class MyUdp(object):
     def __init__(self):
         self.__udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
         self.client_address=None
-        #self.address = (host, port)  
-        #self.__udp.bind(self.address)      
+        self.address = (MyUdp.getlocalIP(), 8899)  
+        self.__udp.bind(self.address)      
     
     def send_message(self,order,val=(0,0)):
         #val=(val1,val2) val1:-128~127 val2:0~255
@@ -35,17 +35,32 @@ class MyUdp(object):
         return '%s%s' % (temp,c)
     
     @staticmethod
-    def check(b):
-        num=struct.unpack_from('BBBBBBB',b,offset=2)
+    def check(beit):
+        num=struct.unpack_from('BBBBBBB',beit,offset=2)
         c=num[0]
         for n in xrange(len(num)-1):
             c=c^num[n+1]
         return struct.pack('B',c)
 
+    @staticmethod
+    def getlocalIP():
+        return socket.gethostbyname(socket.gethostname())
+
+    @staticmethod
+    def getdata(datum):
+        cmd=None
+        if MyUdp.check(datum)==datum[-1:]:
+            for key,value in MyUdp.commands.items():
+                if value==datum[:7]:
+                    cmd=key
+        if cmd is not None:
+            return (cmd,struct.unpack('b',datum[-3])[0],struct.unpack('B',datum[-2])[0])
+        else:
+            return None
 
 if __name__=='__main__':
     mdp=MyUdp()
-    mdp.client_address=('192.168.1.103',8899)
+    mdp.client_address=mdp.address
     while True:
         input = raw_input()  
         if not input:  
@@ -60,15 +75,9 @@ if __name__=='__main__':
             print 'no such a order\norderlist:'
             for o in MyUdp.commands:
                 print o
+            break
+        data, addr = mdp.recv_message()
+        data=MyUdp.getdata(data)
+        if data:
+            print "received:", data, "from", addr
     mdp.close() 
-
-#if __name__=='__main__':
-#    mdp=MyUdp('192.168.43.221',8899)
-#    while True:
-#        data, addr = mdp.recv_message()  
-#        if not data:  
-#            break  
-#        print "received:", data, "from", addr  
-#    s.close() 
-
-
