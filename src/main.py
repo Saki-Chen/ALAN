@@ -7,7 +7,6 @@ from camshift.mycamshift import mycamshift
 from camshift.analyze import get_direction
 import camshift.video as video
 
-
 class App(object):
     def __init__(self, video_src):
         self.cam = video.create_capture(video_src)
@@ -19,6 +18,7 @@ class App(object):
         self.selection=None
         self.lock=False
         self.mdp=MyUdp()
+        self.light=self.get_light()
         #wifi模块IP
         self.mdp.client_address=('192.168.1.103',8899)
         cv2.namedWindow('TUCanshift')
@@ -53,19 +53,39 @@ class App(object):
         cv2.destroyWindow('%s%s' % ('cam',str(len(self.list_camshift)-1)))
         self.list_camshift.pop()
         return False
-               
+    
+    @staticmethod
+    def creat_camshift_from_img(hsv):
+        #hsv尺寸应和视频尺寸一致
+        camshift=mycamshift()
+        mask=mycamshift.filte_color(hsv,np.array((0.,0.,0.)),np.array((179.,255.,255.)))
+        camshift.preProcess(hsv,mask,(0,0,hsv.shape[1],hsv.shape[0]),16)
+        return camshift
+
+    def get_light(self):
+        img=cv2.imread('light.jpg')
+        hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+        hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
+        temp=App.creat_camshift_from_img(hsv)
+        return temp
+            
     def run(self):
         while True:  
             ret, self.frame = self.cam.read()
-            hsv,mask=mycamshift.filte_color(self.frame)
+            hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
+            #hsv=cv2.pyrDown(hsv,dstsize=(self.frame.shape[1]/2,self.frame.shape[0]/2))
+            #hsv=cv2.pyrUp(hsv,dstsize=(self.frame.shape[1],self.frame.shape[0]))
+            mask=mycamshift.filte_color(hsv,np.array((0.,80.,80.)),np.array((179.,255.,255.)))
             if self.newcamshift is not None:
-                if self.newcamshift.preProcess(hsv,mask,self.selection):
+                if self.newcamshift.preProcess(hsv,mask,self.selection,16):
                     cv2.imshow(str(ll),self.newcamshift.getHist())   
 
             self.lock=False
             ll=len(self.list_camshift) 
             if ll>0:
-                track_box=[]
+                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 250.)),np.array((179., 15., 255.)))
+                track_box=[self.light.go_once(hsv,light_mask)]
+                cv2.imshow('light',self.light.prob)
                 for x in self.list_camshift:
                     track_box.append(x.go_once(hsv,mask))             
 
@@ -80,8 +100,9 @@ class App(object):
                         print(track_box)
                 n=len(track_box)
                 if n>2:
-                    p1,p2,p3=track_box[n-3:]
-                    if p1[0] and p2[0] and p3[0]:
+                    p1,p2=track_box[n-2:]
+                    p3=track_box[0]
+                    if p1 and p2 and p3:
                         try:
                             mes=get_direction(p1[0],p2[0],p3[0])
                         except:

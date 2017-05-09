@@ -13,12 +13,20 @@ class mycamshift(object):
         self.prob=None
   
     @staticmethod
-    def filte_color(frame,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((180., 255., 255.))):
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, lower_hsv, higher_hsv)
-        return (hsv,mask)
+    def filte_color(hsv,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((179., 255., 255.)),ksize=5):
+        #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
+        #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(ksize,ksize)))
+        #mask_area=cv2.bitwise_not(mask_area)
+        #hsv=cv2.medianBlur(hsv,5)
+        mask1 = cv2.inRange(hsv, lower_hsv, np.array((95.,higher_hsv[1],higher_hsv[2])))
+        mask2=cv2.inRange(hsv, np.array((130.,lower_hsv[1],lower_hsv[2])), higher_hsv )
+        mask=cv2.add(mask1,mask2)
+        mask=cv2.medianBlur(mask,5)
+        #cv2.imshow('temp',mask)
+        return mask
 
-    def preProcess(self,hsv,mask,selection,n=32):     
+    def preProcess(self,hsv,mask,selection,n=16):     
         if selection is None:
             return False
         x0, y0, x1, y1 = selection
@@ -56,6 +64,7 @@ class mycamshift(object):
         if(area<5):
             print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
+            return None
         return track_box
 
 

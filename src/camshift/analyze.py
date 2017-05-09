@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*- 
+﻿# -*- coding: UTF-8 -*- 
 
 from numpy import linalg
 from numpy import *
