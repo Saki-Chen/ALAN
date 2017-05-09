@@ -18,7 +18,12 @@ class App(object):
         self.selection=None
         self.lock=False
         self.mdp=MyUdp()
+        
         self.light=self.get_light()
+        
+        self.list_camshift.append(self.get_car('red.jpg',0))
+        self.list_camshift.append(self.get_car('green.jpg',1))
+
         #wifi模块IP
         self.mdp.client_address=(MyUdp.getlocalIP(), 8899)  
         cv2.namedWindow('TUCanshift')
@@ -58,17 +63,31 @@ class App(object):
     def creat_camshift_from_img(hsv):
         #hsv尺寸应和视频尺寸一致
         camshift=mycamshift()
-        mask=mycamshift.filte_color(hsv,np.array((0.,0.,0.)),np.array((179.,255.,255.)))
-        camshift.preProcess(hsv,mask,(0,0,hsv.shape[1],hsv.shape[0]),16)
+        mask=mycamshift.filte_color(hsv,np.array((0.,0.,0.)),np.array((180.,255.,255.)))
+        camshift.preProcess(hsv,mask,(0,0,hsv.shape[1],hsv.shape[0]),32)
         return camshift
 
     def get_light(self):
-        img=cv2.imread('light.jpg')
+        img=cv2.imread('light.jpg',cv2.IMREAD_UNCHANGED)
+        img=cv2.resize(img,(self.frame.shape[1],self.frame.shape[0]))
         hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
-        hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
+        #hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
         temp=App.creat_camshift_from_img(hsv)
         temp.ID=99
         return temp
+    
+    def get_car(self,file,ID):
+        img=cv2.imread(file,cv2.IMREAD_UNCHANGED)
+        img=cv2.resize(img,(self.frame.shape[1],self.frame.shape[0]))
+        
+        hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+        #hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
+        temp=App.creat_camshift_from_img(hsv)
+        #cv2.imshow(str(ID),temp.getHist())
+        temp.ID=ID
+
+        return temp
+
             
     def run(self):
         while True:  
@@ -78,7 +97,7 @@ class App(object):
             #hsv=cv2.pyrUp(hsv,dstsize=(self.frame.shape[1],self.frame.shape[0]))
             mask=mycamshift.filte_color(hsv,np.array((0.,80.,80.)),np.array((179.,255.,255.)))
             if self.newcamshift is not None:
-                if self.newcamshift.preProcess(hsv,mask,self.selection,16):
+                if self.newcamshift.preProcess(hsv,mask,self.selection,32):
                     cv2.imshow(str(ll),self.newcamshift.getHist())   
 
             self.lock=False
