@@ -7,14 +7,17 @@ class MyUdp(object):
                   stop='\xAA\xBB\x55\x01\x04\x00\x00',
                   start='\xAA\xBB\x55\x01\x04\x00\x77',
                   speed_up='\xAA\xBB\x55\x01\x04\x00\x88',
-                  guidance='\xAA\xBB\x55\x01\x04\x00\x11')
+                  guidance='\xAA\xBB\x55\x01\x04\x00\x11',
+                  lost='\xAA\xBB\x55\x01\x04\x00\x22')
 
     def __init__(self):
         self.__udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
         self.client_address=None
-        self.address = (MyUdp.getlocalIP(), 8899)  
-        self.__udp.bind(self.address)      
     
+    def bind_host(self):
+        self.address = (MyUdp.getlocalIP(), 8899)  
+        self.__udp.bind(self.address)    
+
     def send_message(self,order,val=(0,0)):
         #val=(val1,val2) val1:-128~127 val2:0~255
         if order in MyUdp.commands and self.client_address is not None:
@@ -60,6 +63,7 @@ class MyUdp(object):
 
 if __name__=='__main__':
     mdp=MyUdp()
+    mdp.bind_host()
     mdp.client_address=mdp.address
     while True:
         input = raw_input()  

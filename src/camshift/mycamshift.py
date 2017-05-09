@@ -22,7 +22,7 @@ class mycamshift(object):
         mask1 = cv2.inRange(hsv, lower_hsv, np.array((95.,higher_hsv[1],higher_hsv[2])))
         mask2=cv2.inRange(hsv, np.array((130.,lower_hsv[1],lower_hsv[2])), higher_hsv )
         mask=cv2.add(mask1,mask2)
-        mask=cv2.medianBlur(mask,5)
+        #mask=cv2.medianBlur(mask,5)
         #cv2.imshow('temp',mask)
         return mask
 

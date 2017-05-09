@@ -20,7 +20,7 @@ class App(object):
         self.mdp=MyUdp()
         self.light=self.get_light()
         #wifi模块IP
-        self.mdp.client_address=('192.168.1.103',8899)
+        self.mdp.client_address=(MyUdp.getlocalIP(), 8899)  
         cv2.namedWindow('TUCanshift')
         cv2.setMouseCallback('TUCanshift', self.onmouse)
 
@@ -67,6 +67,7 @@ class App(object):
         hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
         hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
         temp=App.creat_camshift_from_img(hsv)
+        temp.ID=99
         return temp
             
     def run(self):
@@ -97,19 +98,22 @@ class App(object):
                     try:
                         cv2.ellipse(self.frame, x, (0, 0, 255), 2) 
                     except:
-                        print(track_box)
+                        pass
+                        #print(track_box)
                 n=len(track_box)
                 if n>2:
                     p1,p2=track_box[n-2:]
                     p3=track_box[0]
-                    if p1 and p2 and p3:
+                    if p1 and p2 and p3 and not p1[0]==(0,0):
                         try:
                             mes=get_direction(p1[0],p2[0],p3[0])
                         except:
-                            pass
+                            raise Exception('坐标数值错误')
                         else:
                             self.mdp.send_message('guidance',mes)
                             print mes
+                    else:
+                        self.mdp.send_message('lost')
 
             self.lock=True  
             
@@ -125,8 +129,15 @@ class App(object):
             if ch==ord('b'):
                 self.show_backproj=not self.show_backproj
 
+
+            #data, addr = self.mdp.recv_message()
+            #data=MyUdp.getdata(data)
+            #if data:
+            #    print "received:", data, "from", addr
+
         cv2.destroyAllWindows()
         self.cam.release()
+        self.mdp.close()
 
 
 if __name__=='__main__':
