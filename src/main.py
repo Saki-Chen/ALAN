@@ -83,7 +83,7 @@ class App(object):
         hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
         #hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
         temp=App.creat_camshift_from_img(hsv)
-        #cv2.imshow(str(ID),temp.getHist())
+        cv2.imshow(str(ID),temp.getHist())
         temp.ID=ID
 
         return temp
