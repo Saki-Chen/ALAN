@@ -2,6 +2,7 @@
 #树莓派用，使用时请改名video
 from picamera import PiCamera
 import numpy as np
+import time
 class mypicamera(PiCamera):
     def __init__(
             self, camera_num=0, stereo_mode='none', stereo_decimate=False,
@@ -28,6 +29,25 @@ class mypicamera(PiCamera):
 
 def create_capture(source = 0):
     pcam=mypicamera(source)
+    pcam.sensor_mode=4
     pcam.resolution=(640,480)
     pcam.framerate=30
+
+    #pcam.saturation=50
+    pcam.exposure_mode='sports'
+    #pcam.image_effect='blur'
+    #pcam.iso=1600
+    #print pcam.iso
+    #pcam.meter_mode='backlit'
+    pcam.meter_mode='matrix'
+    #print pcam.raw_format
+    #pcam.sharpness=50
+    #print pcam.shutter_speed
+    #pcam.awb_mode='incandescent'
+    time.sleep(3)
+    #pcam.awb_mode='auto'
+    awb=pcam.awb_gains
+    pcam.awb_mode='off'
+    pcam.awb_gains=awb
+    #pcam.color_effect=(128,128)
     return pcam
