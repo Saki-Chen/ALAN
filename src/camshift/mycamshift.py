@@ -13,10 +13,9 @@ class mycamshift(object):
         self.prob=None
   
     @staticmethod
-    def filte_color(hsv,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((179., 255., 255.)),ksize=5):
-        #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    def filte_color(hsv,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((179., 255., 255.)), iterations=3):
         #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
-        #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(ksize,ksize)))
+        #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
         #mask_area=cv2.bitwise_not(mask_area)
         #hsv=cv2.medianBlur(hsv,5)
         mask1 = cv2.inRange(hsv, lower_hsv, np.array((95.,higher_hsv[1],higher_hsv[2])))
@@ -25,6 +24,10 @@ class mycamshift(object):
         #mask=cv2.medianBlur(mask,5)
         #cv2.imshow('temp',mask)
         return mask
+
+    def prProcess_light(self,frame):
+        self.__framesize=(frame.shape[0],frame.shape[1])
+        self.__track_window=(0,0,frame.shape[1],frame.shape[0])
 
     def preProcess(self,hsv,mask,selection,n=16):     
         if selection is None:
@@ -67,8 +70,21 @@ class mycamshift(object):
             return None
         return track_box
 
-
-
+    def go_once_gray(self,img_gray):
+        if not(self.__track_window and self.__track_window[2] > 0 and self.__track_window[3] > 0):
+            raise Exception('跟踪窗未定义或者出错')
+        
+        #小心这条语句能过滤一些反光点，也能把灯滤掉，注意调节kernel大小和iterations
+        img_gray=cv2.morphologyEx(img_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)),iterations=3, borderType=cv2.BORDER_REFLECT)
+        self.prob = img_gray
+        term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
+        track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
+        area=track_box[1][0]*track_box[1][1];
+        if(area<5):
+            print('Target %s is Lost' % self.ID)
+            self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
+            return None
+        return track_box
 
 
 
