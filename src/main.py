@@ -68,11 +68,13 @@ class App(object):
         return camshift
 
     def get_light(self):
-        img=cv2.imread('light.jpg',cv2.IMREAD_UNCHANGED)
-        img=cv2.resize(img,(self.frame.shape[1],self.frame.shape[0]))
-        hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+        #img=cv2.imread('light.jpg',cv2.IMREAD_UNCHANGED)
+        #img=cv2.resize(img,(self.frame.shape[1],self.frame.shape[0]))
+        #hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
         #hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
-        temp=App.creat_camshift_from_img(hsv)
+        #temp=App.creat_camshift_from_img(hsv)
+        temp=mycamshift()
+        temp.prProcess_light(self.frame)
         temp.ID=99
         return temp
     
@@ -103,8 +105,8 @@ class App(object):
             self.lock=False
             ll=len(self.list_camshift) 
             if ll>0:
-                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 250.)),np.array((179., 15., 255.)))
-                track_box=[self.light.go_once(hsv,light_mask)]
+                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 250.)),np.array((179., 255., 255.)))
+                track_box=[self.light.go_once_gray(light_mask)]
                 cv2.imshow('light',self.light.prob)
                 for x in self.list_camshift:
                     track_box.append(x.go_once(hsv,mask))             
