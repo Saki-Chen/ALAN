@@ -90,7 +90,7 @@ class App(object):
 
         return temp
 
-            
+        
     def run(self):
         while True:  
             ret, self.frame = self.cam.read()

@@ -11,9 +11,10 @@ class mypicamera(PiCamera):
         super(mypicamera,self).__init__(
             camera_num, stereo_mode, stereo_decimate,resolution, framerate, sensor_mode, led_pin,
             clock_mode, framerate)
+        
     def read(self, format='bgr', use_video_port=True, resize=None, splitter_port=0, bayer=False, **options):
         img=np.empty((self.resolution[1]*self.resolution[0]*3,), dtype=np.uint8)
-        flag=False
+        flag=False      
         try:
             self.capture(img,format, use_video_port, resize, splitter_port, bayer, **options)
         except:
@@ -30,13 +31,13 @@ class mypicamera(PiCamera):
 def create_capture(source = 0):
     pcam=mypicamera(source)
     pcam.sensor_mode=4
-    pcam.resolution=(640,480)
-    pcam.framerate=30
+    pcam.resolution=(864,640)
+    #pcam.resolution=(640,480)
+    pcam.framerate=60
 
     #pcam.saturation=50
     pcam.exposure_mode='sports'
     #pcam.image_effect='blur'
-    #pcam.iso=1600
     #print pcam.iso
     #pcam.meter_mode='backlit'
     pcam.meter_mode='matrix'
@@ -48,6 +49,21 @@ def create_capture(source = 0):
     #pcam.awb_mode='auto'
     awb=pcam.awb_gains
     pcam.awb_mode='off'
+    
     pcam.awb_gains=awb
+    #pcam.iso=pcam.iso
     #pcam.color_effect=(128,128)
     return pcam
+
+if __name__=='__main__':
+    import cv2
+    from pkg_resources import require
+    print(require('picamera'))
+    cap=create_capture()
+    while True:
+        f,img=cap.read()
+        kk=cv2.waitKey(2)
+        if kk==27:
+            break
+    cap.release()
+        
