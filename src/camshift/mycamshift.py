@@ -82,7 +82,7 @@ class mycamshift(object):
         area=track_box[1][0]*track_box[1][1];
         self.__track_window=self.adj_window(self.__track_window,3)
         if(area<5):
-            print('Target %s is Lost' % self.ID)
+            #print('Target %s is Lost' % self.ID)
             #self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None
         return track_box
@@ -98,7 +98,7 @@ class mycamshift(object):
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
         if(area<5):
-            print('Target %s is Lost' % self.ID)
+            #print('Target %s is Lost' % self.ID)
             #self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None
         return track_box

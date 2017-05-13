@@ -6,7 +6,7 @@ from udp.myudp import MyUdp
 from camshift.mycamshift import mycamshift
 from camshift.analyze import get_direction
 import camshift.video as video
-
+import time
 class App(object):
     def __init__(self, video_src):
         self.cam = video.create_capture(video_src)
@@ -18,7 +18,7 @@ class App(object):
         self.selection=None
         self.lock=False
         self.mdp=MyUdp()
-        
+        self.count=50
         self.light=self.get_light()
         
         self.list_camshift.append(self.get_car('red.jpg',0))
@@ -144,6 +144,13 @@ class App(object):
                 cv2.bitwise_not(vis_roi, vis_roi)
               
             cv2.imshow('TUCanshift',self.frame)
+            print (str(self.count))
+            self.count=self.count-1
+            if self.count<0:
+                self.count=39
+                self.cam.release()
+                self.cam=video.create_capture(0)
+                time.sleep(0.5)
             ch = cv2.waitKey(2)
             if ch == 27:
                 break
