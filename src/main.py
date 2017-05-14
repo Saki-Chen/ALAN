@@ -9,7 +9,8 @@ import camshift.video as video
 import time
 class App(object):
     def __init__(self, video_src):
-        self.cam = video.create_capture(video_src)
+        self.server_address='http://172.27.35.2:8000/stream.mjpg'
+        self.cam = video.create_capture(self.server_address)
         ret, self.frame = self.cam.read()
         self.drag_start = None
         self.list_camshift=[]
@@ -18,9 +19,9 @@ class App(object):
         self.selection=None
         self.lock=False
         self.mdp=MyUdp()
-        self.count=50
+        self.count=0
         self.light=self.get_light()
-        
+
         self.list_camshift.append(self.get_car('red.jpg',0))
         self.list_camshift.append(self.get_car('green.jpg',1))
 
@@ -93,7 +94,14 @@ class App(object):
         
     def run(self):
         while True:  
-            ret, self.frame = self.cam.read()
+            while True:
+                ret, self.frame = self.cam.read()
+                if ret:
+                    break
+                else:
+                    self.cam.release()
+                    self.cam=video.create_capture(self.server_address)
+                    print('connection break')
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
             #hsv=cv2.pyrDown(hsv,dstsize=(self.frame.shape[1]/2,self.frame.shape[0]/2))
             #hsv=cv2.pyrUp(hsv,dstsize=(self.frame.shape[1],self.frame.shape[0]))
@@ -105,7 +113,7 @@ class App(object):
             self.lock=False
             ll=len(self.list_camshift) 
             if ll>0:
-                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 250.)),np.array((179., 255., 255.)))
+                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 221.)),np.array((179., 255., 255.)))
                 track_box=[self.light.go_once_gray(light_mask)]
                 cv2.imshow('light',self.light.prob)
                 for x in self.list_camshift:
@@ -145,12 +153,12 @@ class App(object):
               
             cv2.imshow('TUCanshift',self.frame)
             print (str(self.count))
-            self.count=self.count-1
-            if self.count<0:
-                self.count=39
-                self.cam.release()
-                self.cam=video.create_capture(0)
-                time.sleep(0.5)
+            self.count=self.count+1
+            #if self.count<0:
+            #    self.count=39
+            #    self.cam.release()
+            #    self.cam=video.create_capture(0)
+            #    time.sleep(0.5)
             ch = cv2.waitKey(2)
             if ch == 27:
                 break
