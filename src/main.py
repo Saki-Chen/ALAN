@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*- 
+﻿# -*- coding: UTF-8 -*- 
 import cv2
 import numpy as np
 # local module
@@ -9,7 +9,7 @@ import camshift.video as video
 import time
 class App(object):
     def __init__(self, video_src):
-        self.server_address='http://172.27.35.2:8000/stream.mjpg'
+        self.server_address='http://172.23.33.2:8000/stream.mjpg'
         self.cam = video.create_capture(self.server_address)
         ret, self.frame = self.cam.read()
         self.drag_start = None
@@ -26,7 +26,7 @@ class App(object):
         self.list_camshift.append(self.get_car('green.jpg',1))
 
         #wifi模块IP
-        self.mdp.client_address=(MyUdp.getlocalIP(), 8899)  
+        self.mdp.client_address=('192.168.40.31', 8899)  
         cv2.namedWindow('TUCanshift')
         cv2.setMouseCallback('TUCanshift', self.onmouse)
 
@@ -113,7 +113,7 @@ class App(object):
             self.lock=False
             ll=len(self.list_camshift) 
             if ll>0:
-                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 221.)),np.array((179., 255., 255.)))
+                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 235.)),np.array((179., 255., 255.)))
                 track_box=[self.light.go_once_gray(light_mask)]
                 cv2.imshow('light',self.light.prob)
                 for x in self.list_camshift:

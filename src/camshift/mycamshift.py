@@ -92,7 +92,7 @@ class mycamshift(object):
             raise Exception('跟踪窗未定义或者出错')
         
         #小心这条语句能过滤一些反光点，也能把灯滤掉，注意调节kernel大小和iterations
-        img_gray=cv2.morphologyEx(img_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)),iterations=2, borderType=cv2.BORDER_REFLECT)
+        img_gray=cv2.morphologyEx(img_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)),iterations=2, borderType=cv2.BORDER_REFLECT)     
         self.prob = img_gray
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
