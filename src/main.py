@@ -1,16 +1,21 @@
-# -*- coding: UTF-8 -*- 
+﻿# -*- coding: UTF-8 -*- 
 import cv2
 import numpy as np
 # local module
 from udp.myudp import MyUdp
 from camshift.mycamshift import mycamshift
-from camshift.analyze import get_direction
+from camshift.analyze import *
 import camshift.video as video
-
+import time
 class App(object):
     def __init__(self, video_src):
-        self.cam = video.create_capture(video_src)
+        #self.server_address='http://192.168.40.146:8000/stream.mjpg'
+        self.server_address=0
+        self.cam = video.create_capture(self.server_address)
         ret, self.frame = self.cam.read()
+        
+        #self.frame=cv2.imread('tu.png')
+
         self.drag_start = None
         self.list_camshift=[]
         self.show_backproj = False
@@ -18,14 +23,14 @@ class App(object):
         self.selection=None
         self.lock=False
         self.mdp=MyUdp()
-        
+        self.count=0
         self.light=self.get_light()
-        
+
         self.list_camshift.append(self.get_car('red.jpg',0))
         self.list_camshift.append(self.get_car('green.jpg',1))
 
         #wifi模块IP
-        self.mdp.client_address=(MyUdp.getlocalIP(), 8899)  
+        self.mdp.client_address=('192.168.40.31', 8899)  
         cv2.namedWindow('TUCanshift')
         cv2.setMouseCallback('TUCanshift', self.onmouse)
 
@@ -80,20 +85,29 @@ class App(object):
     
     def get_car(self,file,ID):
         img=cv2.imread(file,cv2.IMREAD_UNCHANGED)
-        img=cv2.resize(img,(self.frame.shape[1],self.frame.shape[0]))
-        
+        img=cv2.resize(img,(self.frame.shape[1],self.frame.shape[0]))       
         hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
-        #hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
         temp=App.creat_camshift_from_img(hsv)
         cv2.imshow(str(ID),temp.getHist())
         temp.ID=ID
 
         return temp
 
-            
+        
     def run(self):
         while True:  
-            ret, self.frame = self.cam.read()
+            while True:
+                ret, self.frame = self.cam.read()
+                
+                #self.frame=cv2.imread('tu.png')
+                #ret=1
+
+                if ret:
+                    break
+                else:
+                    self.cam.release()
+                    self.cam=video.create_capture(self.server_address)
+                    print('connection break')
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
             #hsv=cv2.pyrDown(hsv,dstsize=(self.frame.shape[1]/2,self.frame.shape[0]/2))
             #hsv=cv2.pyrUp(hsv,dstsize=(self.frame.shape[1],self.frame.shape[0]))
@@ -105,11 +119,44 @@ class App(object):
             self.lock=False
             ll=len(self.list_camshift) 
             if ll>0:
-                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 250.)),np.array((179., 255., 255.)))
+                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 235.)),np.array((179., 255., 255.)))
                 track_box=[self.light.go_once_gray(light_mask)]
                 cv2.imshow('light',self.light.prob)
                 for x in self.list_camshift:
                     track_box.append(x.go_once(hsv,mask))             
+
+                n=len(track_box)
+                if n>2:
+                    p3=track_box[0]
+                    p1,p2=track_box[n-2:]
+                    try:
+                        p1=p1[0]
+                    except:
+                        p1=None
+                    try:
+                        p2=p2[0]
+                    except:
+                        p2=None
+                    try:
+                        p3=p3[0]
+                    except:
+                        p3=None
+                    if p1 and p2:
+                        try:
+                            theta,D,dst=snap(mask,p1,p2,2,1)
+                            cv2.imshow('snap',dst)
+                            if theta is not None:
+                                print('Block ahead')
+                                print((theta,D))
+                            elif p3:
+                                mes=get_direction(p1,p2,p3)
+                                self.mdp.send_message('guidance',mes)
+                                print mes
+                        except:
+                            print('0/0 is error')
+                            self.mdp.send_message('lost')
+                    else:
+                        self.mdp.send_message('lost')
 
                 prob=self.list_camshift[ll-1].prob
                 if self.show_backproj and prob is not None:
@@ -121,20 +168,7 @@ class App(object):
                     except:
                         pass
                         #print(track_box)
-                n=len(track_box)
-                if n>2:
-                    p1,p2=track_box[n-2:]
-                    p3=track_box[0]
-                    if p1 and p2 and p3 and not p1[0]==(0,0):
-                        try:
-                            mes=get_direction(p1[0],p2[0],p3[0])
-                        except:
-                            raise Exception('坐标数值错误')
-                        else:
-                            self.mdp.send_message('guidance',mes)
-                            print mes
-                    else:
-                        self.mdp.send_message('lost')
+
 
             self.lock=True  
             
@@ -144,6 +178,13 @@ class App(object):
                 cv2.bitwise_not(vis_roi, vis_roi)
               
             cv2.imshow('TUCanshift',self.frame)
+            print (str(self.count))
+            self.count=self.count+1
+            #if self.count<0:
+            #    self.count=39
+            #    self.cam.release()
+            #    self.cam=video.create_capture(0)
+            #    time.sleep(0.5)
             ch = cv2.waitKey(2)
             if ch == 27:
                 break
