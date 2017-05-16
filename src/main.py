@@ -9,8 +9,8 @@ import camshift.video as video
 import time
 class App(object):
     def __init__(self, video_src):
-        #self.server_address='http://192.168.40.146:8000/stream.mjpg'
-        self.server_address=0
+        self.server_address='http://192.168.40.146:8000/stream.mjpg'
+        #self.server_address=0
         self.cam = video.create_capture(self.server_address)
         ret, self.frame = self.cam.read()
         
@@ -68,7 +68,7 @@ class App(object):
     def creat_camshift_from_img(hsv):
         #hsv尺寸应和视频尺寸一致
         camshift=mycamshift()
-        mask=mycamshift.filte_color(hsv,np.array((0.,0.,0.)),np.array((180.,255.,255.)))
+        mask=mycamshift.filte_color(hsv,15,60,2)
         camshift.preProcess(hsv,mask,(0,0,hsv.shape[1],hsv.shape[0]),32)
         return camshift
 
@@ -111,7 +111,7 @@ class App(object):
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
             #hsv=cv2.pyrDown(hsv,dstsize=(self.frame.shape[1]/2,self.frame.shape[0]/2))
             #hsv=cv2.pyrUp(hsv,dstsize=(self.frame.shape[1],self.frame.shape[0]))
-            mask=mycamshift.filte_color(hsv,np.array((0.,80.,80.)),np.array((179.,255.,255.)))
+            mask=mycamshift.filte_color(hsv)
             if self.newcamshift is not None:
                 if self.newcamshift.preProcess(hsv,mask,self.selection,32):
                     cv2.imshow(str(ll),self.newcamshift.getHist())   
@@ -119,9 +119,15 @@ class App(object):
             self.lock=False
             ll=len(self.list_camshift) 
             if ll>0:
-                light_mask=mycamshift.filte_color(hsv,np.array((0., 0., 235.)),np.array((179., 255., 255.)))
-                track_box=[self.light.go_once_gray(light_mask)]
-                cv2.imshow('light',self.light.prob)
+                light_gray=cv2.cvtColor(self.frame,cv2.COLOR_BGR2GRAY)
+                mean,temp = cv2.threshold(light_gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+                _,light_gray=cv2.threshold(light_gray,(255-mean)*0.8+mean,255,cv2.THRESH_BINARY)
+                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)),iterations=1, borderType=cv2.BORDER_REPLICATE)
+        
+                cv2.imshow('light',light_gray)
+                
+                track_box=[self.light.go_once_gray(light_gray)]
+                
                 for x in self.list_camshift:
                     track_box.append(x.go_once(hsv,mask))             
 
@@ -143,7 +149,8 @@ class App(object):
                         p3=None
                     if p1 and p2:
                         try:
-                            theta,D,dst=snap(mask,p1,p2,2,1)
+                            theta,D,dst=snap(mask,p1,p2,3,0.8,1.2)
+                            dst=cv2.resize(dst,(500,300))
                             cv2.imshow('snap',dst)
                             if theta is not None:
                                 print('Block ahead')

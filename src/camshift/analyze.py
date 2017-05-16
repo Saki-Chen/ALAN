@@ -22,7 +22,7 @@ def get_direction(point1,point2,point3):
     return (theta,D)
     
 
-def snap(src,p1,p2,k1=2,k2=1,adjust=1.2):
+def snap(src,p1,p2,k1=3,k2=0.8,adjust=1.2):
     x1,y1=p1
     x2,y2=p2
     R=array((x2-x1,y2-y1))
@@ -38,8 +38,10 @@ def snap(src,p1,p2,k1=2,k2=1,adjust=1.2):
     D=None
 
     if len(src.shape)==2:
-        p3=get_centroid(dst[:,int(L*adjust):])
+        offset=int(L*adjust)
+        p3=get_centroid(dst[:,offset:])
         if p3 is not None:
+            p3=(p3[0]+offset,p3[1])
             theta,D =get_direction(p1,p2,p3)
 
     return (theta,D,dst)
@@ -47,7 +49,7 @@ def snap(src,p1,p2,k1=2,k2=1,adjust=1.2):
 def get_centroid(img_bin):
     _ ,contours, hierarchy = cv2.findContours(img_bin,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
     target=None
-    area=88
+    area=200
     for cnt in contours:
         M= cv2.moments(cnt)
         if M['m00']>area:

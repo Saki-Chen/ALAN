@@ -13,16 +13,25 @@ class mycamshift(object):
         self.prob=None
   
     @staticmethod
-    def filte_color(hsv,lower_hsv=np.array((0., 85., 85.)),higher_hsv=np.array((179., 255., 255.)), iterations=3):
+    def filte_color(hsv,offset1=15,offset2=60, iterations=1):
         #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
         #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
         #mask_area=cv2.bitwise_not(mask_area)
         #hsv=cv2.medianBlur(hsv,5)
-        mask1 = cv2.inRange(hsv, lower_hsv, np.array((95.,higher_hsv[1],higher_hsv[2])))
-        mask2=cv2.inRange(hsv, np.array((130.,lower_hsv[1],lower_hsv[2])), higher_hsv )
-        mask=cv2.add(mask1,mask2)
+        H_hist = cv2.calcHist([hsv],[0], None,[180],[0,180])
+        H = H_hist.argmax(axis=None, out=None)
+        S_hist = cv2.calcHist([hsv],[1], None,[255],[0,255])
+        S = S_hist.argmax(axis=None, out=None)
+
+        #cv2.imshow('v',hsv[:,:,1])
+
+        mask = cv2.inRange(hsv, np.array((H-offset1,S-offset2,0)), np.array((H+offset1,S+offset2,255)))
+        mask=cv2.bitwise_not(mask)
+        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
+        #mask2=cv2.inRange(hsv, np.array((130.,lower_hsv[1],lower_hsv[2])), higher_hsv )
+        #mask=cv2.add(mask1,mask2)
         #mask=cv2.medianBlur(mask,5)
-        #cv2.imshow('temp',mask)
+        cv2.imshow('fore_ground',mask)
         return mask
 
     def prProcess_light(self,frame):
