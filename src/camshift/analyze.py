@@ -22,7 +22,7 @@ def get_direction(point1,point2,point3):
     return (theta,D)
     
 
-def snap(src,p1,p2,k1=3,k2=0.8,adjust=1.2):
+def snap(src,p1,p2,k1=3,k2=0.8,adjust=1.4):
     x1,y1=p1
     x2,y2=p2
     R=array((x2-x1,y2-y1))
@@ -39,6 +39,7 @@ def snap(src,p1,p2,k1=3,k2=0.8,adjust=1.2):
 
     if len(src.shape)==2:
         offset=int(L*adjust)
+        cv2.imshow('avoid',dst[:,offset:])
         p3=get_centroid(dst[:,offset:])
         if p3 is not None:
             p3=(p3[0]+offset,p3[1])

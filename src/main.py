@@ -68,7 +68,8 @@ class App(object):
     def creat_camshift_from_img(hsv):
         #hsv尺寸应和视频尺寸一致
         camshift=mycamshift()
-        mask=mycamshift.filte_color(hsv,15,60,2)
+        #mask=cv2.inRange(hsv,np.array((0.,0.,0.)),np.array((255.,255.,255.)))
+        mask=np.ones((hsv.shape[0],hsv.shape[1]),dtype=np.uint8)
         camshift.preProcess(hsv,mask,(0,0,hsv.shape[1],hsv.shape[0]),32)
         return camshift
 
@@ -149,7 +150,7 @@ class App(object):
                         p3=None
                     if p1 and p2:
                         try:
-                            theta,D,dst=snap(mask,p1,p2,3,0.8,1.2)
+                            theta,D,dst=snap(mask,p1,p2,3.4,0.47,1.53)
                             dst=cv2.resize(dst,(500,300))
                             cv2.imshow('snap',dst)
                             if theta is not None:

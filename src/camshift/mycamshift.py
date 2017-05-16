@@ -13,7 +13,7 @@ class mycamshift(object):
         self.prob=None
   
     @staticmethod
-    def filte_color(hsv,offset1=15,offset2=60, iterations=1):
+    def filte_color(hsv,offset1=15.,offset2=60., iterations=1):
         #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
         #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
         #mask_area=cv2.bitwise_not(mask_area)
@@ -25,7 +25,7 @@ class mycamshift(object):
 
         #cv2.imshow('v',hsv[:,:,1])
 
-        mask = cv2.inRange(hsv, np.array((H-offset1,S-offset2,0)), np.array((H+offset1,S+offset2,255)))
+        mask = cv2.inRange(hsv, np.array((H-offset1,S-offset2,0.)), np.array((H+offset1,S+offset2,255.)))
         mask=cv2.bitwise_not(mask)
         mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
         #mask2=cv2.inRange(hsv, np.array((130.,lower_hsv[1],lower_hsv[2])), higher_hsv )
