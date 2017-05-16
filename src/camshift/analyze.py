@@ -19,7 +19,7 @@ def get_direction(point1,point2,point3):
     if D>255:
         D=255
 
-    return (int(theta),int(D))
+    return (theta,D)
     
 
 def snap(src,p1,p2,k1=2,k2=1,adjust=1.2):

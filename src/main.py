@@ -149,7 +149,8 @@ class App(object):
                                 print('Block ahead')
                                 print((theta,D))
                             elif p3:
-                                mes=get_direction(p1,p2,p3)
+                                t,d=get_direction(p1,p2,p3)
+                                mes=(int(t),int(d))
                                 self.mdp.send_message('guidance',mes)
                                 print mes
                         except:
