@@ -150,12 +150,12 @@ class App(object):
                         p3=None
                     if p1 and p2:
                         try:
-                            theta,D,dst=snap(mask,p1,p2,3.4,0.47,1.53)
+                            theta,D,dst=snap(mask,p1,p2,5,0.47,1.53)
                             dst=cv2.resize(dst,(500,300))
                             cv2.imshow('snap',dst)
                             if theta is not None:
                                 print('Block ahead')
-                                D=int(D/2.4*127)
+                                D=int(D/4*127)
                                 print((theta,D))
                                 self.mdp.send_message('avoid',(theta,D))
 
@@ -163,11 +163,13 @@ class App(object):
                                 t,d=get_direction(p1,p2,p3)
                                 mes=(int(t),int(d))
                                 self.mdp.send_message('guidance',mes)
+                                print('guidance')
                                 print mes
                         except:
                             print('0/0 is error')
                             self.mdp.send_message('lost')
                     else:
+                        print('lost')
                         self.mdp.send_message('lost')
 
                 prob=self.list_camshift[ll-1].prob
