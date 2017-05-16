@@ -8,7 +8,8 @@ class MyUdp(object):
                   start='\xAA\xBB\x55\x01\x04\x00\x77',
                   speed_up='\xAA\xBB\x55\x01\x04\x00\x88',
                   guidance='\xAA\xBB\x55\x01\x04\x00\x11',
-                  lost='\xAA\xBB\x55\x01\x04\x00\x22')
+                  lost='\xAA\xBB\x55\x01\x04\x00\x22',
+                  avoid='\xAA\xBB\x55\x01\x04\x00\x44')
 
     def __init__(self):
         self.__udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 

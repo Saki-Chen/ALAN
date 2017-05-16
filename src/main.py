@@ -155,7 +155,10 @@ class App(object):
                             cv2.imshow('snap',dst)
                             if theta is not None:
                                 print('Block ahead')
+                                D=int(D/2.4*127)
                                 print((theta,D))
+                                self.mdp.send_message('avoid',(theta,D))
+
                             elif p3:
                                 t,d=get_direction(p1,p2,p3)
                                 mes=(int(t),int(d))
