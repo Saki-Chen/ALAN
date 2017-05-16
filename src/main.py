@@ -4,14 +4,18 @@ import numpy as np
 # local module
 from udp.myudp import MyUdp
 from camshift.mycamshift import mycamshift
-from camshift.analyze import get_direction
+from camshift.analyze import *
 import camshift.video as video
 import time
 class App(object):
     def __init__(self, video_src):
-        self.server_address='http://172.23.33.2:8000/stream.mjpg'
+        #self.server_address='http://192.168.40.146:8000/stream.mjpg'
+        self.server_address=0
         self.cam = video.create_capture(self.server_address)
         ret, self.frame = self.cam.read()
+        
+        #self.frame=cv2.imread('tu.png')
+
         self.drag_start = None
         self.list_camshift=[]
         self.show_backproj = False
@@ -81,10 +85,8 @@ class App(object):
     
     def get_car(self,file,ID):
         img=cv2.imread(file,cv2.IMREAD_UNCHANGED)
-        img=cv2.resize(img,(self.frame.shape[1],self.frame.shape[0]))
-        
+        img=cv2.resize(img,(self.frame.shape[1],self.frame.shape[0]))       
         hsv=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
-        #hsv=cv2.resize(hsv,(self.frame.shape[1],self.frame.shape[0]))
         temp=App.creat_camshift_from_img(hsv)
         cv2.imshow(str(ID),temp.getHist())
         temp.ID=ID
@@ -96,6 +98,10 @@ class App(object):
         while True:  
             while True:
                 ret, self.frame = self.cam.read()
+                
+                #self.frame=cv2.imread('tu.png')
+                #ret=1
+
                 if ret:
                     break
                 else:
@@ -119,6 +125,39 @@ class App(object):
                 for x in self.list_camshift:
                     track_box.append(x.go_once(hsv,mask))             
 
+                n=len(track_box)
+                if n>2:
+                    p3=track_box[0]
+                    p1,p2=track_box[n-2:]
+                    try:
+                        p1=p1[0]
+                    except:
+                        p1=None
+                    try:
+                        p2=p2[0]
+                    except:
+                        p2=None
+                    try:
+                        p3=p3[0]
+                    except:
+                        p3=None
+                    if p1 and p2:
+                        try:
+                            theta,D,dst=snap(mask,p1,p2,2,1)
+                            cv2.imshow('snap',dst)
+                            if theta is not None:
+                                print('Block ahead')
+                                print((theta,D))
+                            elif p3:
+                                mes=get_direction(p1,p2,p3)
+                                self.mdp.send_message('guidance',mes)
+                                print mes
+                        except:
+                            print('0/0 is error')
+                            self.mdp.send_message('lost')
+                    else:
+                        self.mdp.send_message('lost')
+
                 prob=self.list_camshift[ll-1].prob
                 if self.show_backproj and prob is not None:
                     self.frame=prob[...,np.newaxis]
@@ -129,20 +168,7 @@ class App(object):
                     except:
                         pass
                         #print(track_box)
-                n=len(track_box)
-                if n>2:
-                    p1,p2=track_box[n-2:]
-                    p3=track_box[0]
-                    if p1 and p2 and p3 and not p1[0]==(0,0):
-                        try:
-                            mes=get_direction(p1[0],p2[0],p3[0])
-                        except:
-                            raise Exception('坐标数值错误')
-                        else:
-                            self.mdp.send_message('guidance',mes)
-                            print mes
-                    else:
-                        self.mdp.send_message('lost')
+
 
             self.lock=True  
             
