@@ -43,7 +43,8 @@ def snap(src,p1,p2,k1=3,k2=0.8,adjust=1.4):
         p3=get_centroid(dst[:,offset:])
         if p3 is not None:
             p3=(p3[0]+offset,p3[1])
-            theta,D =get_direction(p1,p2,p3)
+            theta,D =get_direction((0,int(k2*L)),(int(L),int(k2*L)),p3)
+            D=int(127*(D-1)/(k1-1))
 
     return (theta,D,dst)
 
