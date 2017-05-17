@@ -77,7 +77,7 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-with picamera.PiCamera(resolution='1280x720', framerate=10) as camera:
+with picamera.PiCamera(resolution='640x480', framerate=16) as camera:
 
     camera.sensor_mode=4
 
@@ -85,7 +85,7 @@ with picamera.PiCamera(resolution='1280x720', framerate=10) as camera:
     #pcam.image_effect='blur'
     #print pcam.iso
     #pcam.meter_mode='backlit'
-    camera.meter_mode='matrix'  
+    camera.meter_mode='average'  
     #pcam.sharpness=50
     #pcam.awb_mode='incandescent'
     time.sleep(2)
