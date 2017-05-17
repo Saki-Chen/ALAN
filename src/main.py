@@ -138,13 +138,14 @@ class App(object):
                     if p1 and p2:
                         try:
                             #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            theta,D,dst=snap(mask,p1,p2,4.5,1.0,1.53)
+                            theta,D,dst=snap(mask,p1,p2,5,0.9,1.4)
                             dst=cv2.resize(dst,(400,200))
                             cv2.imshow('snap',dst)
                             if theta is not None:
+                                mes=(int(theta),int(D))
                                 print('Block ahead')
-                                print((theta,D))
-                                self.mdp.send_message('avoid',(theta,D))
+                                self.mdp.send_message('avoid',mes)
+                                print(mes)
 
                             elif p3:
                                 t,d=get_direction(p1,p2,p3)
@@ -152,6 +153,9 @@ class App(object):
                                 self.mdp.send_message('guidance',mes)
                                 print('guidance')
                                 print mes
+                            else:
+                                print('lost')
+                                self.mdp.send_message('lost')
                         except:
                             print('0/0 is error')
                             self.mdp.send_message('lost')
@@ -160,8 +164,10 @@ class App(object):
                         self.mdp.send_message('lost')
 
                 else:
-                    print('lost')
+                    #print('lost')
                     self.mdp.send_message('lost')
+
+
                 prob=self.list_camshift[ll-1].prob
                 if self.show_backproj and prob is not None:
                     self.frame=prob[...,np.newaxis]
@@ -171,10 +177,10 @@ class App(object):
                         cv2.ellipse(self.frame, x, (0, 0, 255), 2) 
                     except:
                         pass
-                        #print(track_box)
+                        
 
             else:
-                print('lost')
+                #print('lost')
                 self.mdp.send_message('lost')
             self.lock=True  
             
