@@ -11,6 +11,7 @@ class App(object):
     def __init__(self, video_src):
         #树莓派ip
         self.server_address='http://192.168.40.146:8000/stream.mjpg'
+        #self.server_address='udp://@:8000 --demux=h264'
         self.cam = video.create_capture(self.server_address)
         ret, self.frame = self.cam.read()
         self.drag_start = None
@@ -23,8 +24,8 @@ class App(object):
         #self.count=0
         self.light=self.get_light()
 
-        self.list_camshift.append(self.get_car('red.jpg',0))
-        self.list_camshift.append(self.get_car('green.jpg',1))
+        #self.list_camshift.append(self.get_car('red.jpg',0))
+        #self.list_camshift.append(self.get_car('green.jpg',1))
 
         #wifi模块IP
         self.mdp.client_address=('192.168.40.31', 8899)  
@@ -96,7 +97,8 @@ class App(object):
                     self.cam=video.create_capture(self.server_address)
                     print('connection break')
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-            mask=mycamshift.filte_color(hsv)
+            mask,mask_car=mycamshift.filte_background_color(hsv,iterations=3)
+
             if self.newcamshift is not None:
                 if self.newcamshift.preProcess(hsv,mask,self.selection,32):
                     cv2.imshow(str(ll),self.newcamshift.getHist())   
@@ -106,15 +108,16 @@ class App(object):
             if ll>0:
                 light_gray=cv2.cvtColor(self.frame,cv2.COLOR_BGR2GRAY)
                 mean,temp = cv2.threshold(light_gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
                 _,light_gray=cv2.threshold(light_gray,(255-mean)*0.8+mean,255,cv2.THRESH_BINARY)
-                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)),iterations=1, borderType=cv2.BORDER_REPLICATE)
+                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)),iterations=2, borderType=cv2.BORDER_REPLICATE)
         
                 cv2.imshow('light',light_gray)
                 
                 track_box=[self.light.go_once_gray(light_gray)]
                 
                 for x in self.list_camshift:
-                    track_box.append(x.go_once(hsv,mask))             
+                    track_box.append(x.go_once(hsv,mask_car))             
 
                 n=len(track_box)
                 if n>2:
@@ -135,8 +138,8 @@ class App(object):
                     if p1 and p2:
                         try:
                             #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            theta,D,dst=snap(mask,p1,p2,5,0.47,1.53)
-                            dst=cv2.resize(dst,(500,300))
+                            theta,D,dst=snap(mask,p1,p2,4.5,1.0,1.53)
+                            dst=cv2.resize(dst,(400,200))
                             cv2.imshow('snap',dst)
                             if theta is not None:
                                 print('Block ahead')
@@ -156,6 +159,9 @@ class App(object):
                         print('lost')
                         self.mdp.send_message('lost')
 
+                else:
+                    print('lost')
+                    self.mdp.send_message('lost')
                 prob=self.list_camshift[ll-1].prob
                 if self.show_backproj and prob is not None:
                     self.frame=prob[...,np.newaxis]
@@ -167,7 +173,9 @@ class App(object):
                         pass
                         #print(track_box)
 
-
+            else:
+                print('lost')
+                self.mdp.send_message('lost')
             self.lock=True  
             
             if self.selection is not None:

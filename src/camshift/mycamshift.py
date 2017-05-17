@@ -12,8 +12,9 @@ class mycamshift(object):
         self.__hist=None
         self.prob=None
   
+
     @staticmethod
-    def filte_color(hsv,offset1=15.,offset2=60., iterations=1):
+    def filte_background_color(hsv,offset1=15.,offset2=60., iterations=1):
         #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
         #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
         #mask_area=cv2.bitwise_not(mask_area)
@@ -22,17 +23,29 @@ class mycamshift(object):
         H = H_hist.argmax(axis=None, out=None)
         S_hist = cv2.calcHist([hsv],[1], None,[255],[0,255])
         S = S_hist.argmax(axis=None, out=None)
+        V_hist = cv2.calcHist([hsv],[2], None,[255],[0,255])
+        V = V_hist.argmax(axis=None, out=None)
 
-        #cv2.imshow('v',hsv[:,:,1])
 
         mask = cv2.inRange(hsv, np.array((H-offset1,S-offset2,0.)), np.array((H+offset1,S+offset2,255.)))
         mask=cv2.bitwise_not(mask)
-        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
-        #mask2=cv2.inRange(hsv, np.array((130.,lower_hsv[1],lower_hsv[2])), higher_hsv )
-        #mask=cv2.add(mask1,mask2)
-        #mask=cv2.medianBlur(mask,5)
+        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(4,4)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
+
+        #hsv_mask=cv2.bitwise_and(hsv,hsv,mask=mask)
+        #mask_car=cv2.inRange(hsv_mask,np.array((0.,0.,5.)),np.array((180.,255.,255.)))
+        #mask_car=cv2.morphologyEx(mask_car,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(4,4)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
+
+
+        mask1 = cv2.inRange(hsv, np.array((0.,30.,10.)), np.array((H-offset1,255.,255.)))
+        mask2=cv2.inRange(hsv, np.array((H+offset1,30.,10.)), np.array((180.,255.,255.)) )
+        mask_car=cv2.add(mask1,mask2)
+        mask_car=cv2.morphologyEx(mask_car,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)),iterations=iterations-1, borderType=cv2.BORDER_REPLICATE)
+
+
+        #cv2.imshow('hsv_mask',hsv_mask)
+        cv2.imshow('mask_car',mask_car)
         cv2.imshow('fore_ground',mask)
-        return mask
+        return mask,mask_car
 
     def prProcess_light(self,frame):
         self.__framesize=(frame.shape[0],frame.shape[1])
@@ -89,10 +102,10 @@ class mycamshift(object):
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
-        self.__track_window=self.adj_window(self.__track_window,1)
-        if(area<5):
-            #print('Target %s is Lost' % self.ID)
-            #self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
+        self.__track_window=self.adj_window(self.__track_window,0)
+        if(area<45):
+            print('Target %s is Lost' % self.ID)
+            self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None
         return track_box
 
@@ -106,9 +119,9 @@ class mycamshift(object):
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
-        if(area<5):
-            #print('Target %s is Lost' % self.ID)
-            #self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
+        if(area<45):
+            print('Target %s is Lost' % self.ID)
+            self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None
         return track_box
 

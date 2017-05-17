@@ -39,7 +39,8 @@ def snap(src,p1,p2,k1=3,k2=0.8,adjust=1.4):
 
     if len(src.shape)==2:
         offset=int(L*adjust)
-        cv2.imshow('avoid',dst[:,offset:])
+        avoid=cv2.resize(dst[:,offset:],(400-offset,200))
+        cv2.imshow('avoid',avoid)
         p3=get_centroid(dst[:,offset:])
         if p3 is not None:
             p3=(p3[0]+offset,p3[1])
