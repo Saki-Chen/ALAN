@@ -27,7 +27,9 @@
     <Compile Include="camshift\mycamshift.py" />
     <Compile Include="camshift\video.py" />
     <Compile Include="camshift\videoforraspberry.py" />
+    <Compile Include="camshift\WebcamVideoStream.py" />
     <Compile Include="camshift\__init__.py" />
+    <Compile Include="fps.py" />
     <Compile Include="main.py" />
     <Compile Include="udp\myudp.py" />
     <Compile Include="udp\__init__.py" />

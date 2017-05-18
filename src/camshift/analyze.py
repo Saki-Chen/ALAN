@@ -22,7 +22,7 @@ def get_direction(point1,point2,point3):
     return (theta,D)
     
 
-def snap(src,p1,p2,k1=3,k2=0.8,adjust=1.4):
+def snap(src,p1,p2,k1=5,k2=1.2,adjustX=1.4,adjustY=1.1):
     x1,y1=p1
     x2,y2=p2
     R=array((x2-x1,y2-y1))
@@ -38,12 +38,18 @@ def snap(src,p1,p2,k1=3,k2=0.8,adjust=1.4):
     D=None
 
     if len(src.shape)==2:
-        offset=int(L*adjust)
-        avoid=cv2.resize(dst[:,offset:],(400-offset,200))
-        cv2.imshow('avoid',avoid)
-        p3=get_centroid(dst[:,offset:])
+        offsetX=int(L*adjustX)
+        offsetY=int(L*adjustY/2)
+        #avoid=cv2.resize(dst[:,offsetX:],(400-offsetX,200))
+        dst_0=cv2.resize(dst,(400,200))
+        cv2.imshow('snap_0',dst_0)
+        #dst[int(k2*L)-offsetY:int(k2*L)+offsetY,:1]=0
+        a=(int(k2*L)-offsetY,int(k2*L)+offsetY)
+        dst[int(k2*L)-offsetY:int(k2*L)+offsetY,:offsetX]=0
+        #p3=get_centroid(dst[:,offsetX:])
+        p3=get_centroid(dst)
         if p3 is not None:
-            p3=(p3[0]+offset,p3[1])
+            #p3=(p3[0]+offsetX,p3[1])
             theta,D =get_direction((0,int(k2*L)),(int(L),int(k2*L)),p3)
             D=int(127*(D-1)/(k1-1))
 

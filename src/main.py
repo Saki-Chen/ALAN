@@ -2,17 +2,22 @@
 import cv2
 import numpy as np
 # local module
+from fps import FPS
 from udp.myudp import MyUdp
 from camshift.mycamshift import mycamshift
 from camshift.analyze import *
 import camshift.video as video
 import time
+
+from camshift.WebcamVideoStream import WebcamVideoStream
+
 class App(object):
     def __init__(self, video_src):
         #树莓派ip
         self.server_address='http://192.168.40.146:8000/stream.mjpg'
         #self.server_address='udp://@:8000 --demux=h264'
-        self.cam = video.create_capture(self.server_address)
+        #self.cam = video.create_capture(self.server_address)
+        self.cam = WebcamVideoStream(self.server_address).start()
         ret, self.frame = self.cam.read()
         self.drag_start = None
         self.list_camshift=[]
@@ -26,6 +31,8 @@ class App(object):
 
         #self.list_camshift.append(self.get_car('red.jpg',0))
         #self.list_camshift.append(self.get_car('green.jpg',1))
+
+        self.fps = FPS().start()
 
         #wifi模块IP
         self.mdp.client_address=('192.168.40.31', 8899)  
@@ -47,6 +54,7 @@ class App(object):
                 ymax = max(y, self.drag_start[1])
                 self.selection=(xmin, ymin, xmax, ymax)
             if event == cv2.EVENT_LBUTTONUP:
+                self.fps.reset()
                 self.drag_start = None
                 if self.newcamshift is not None and self.newcamshift.getHist() is not None:
                     self.newcamshift.ID=len(self.list_camshift)
@@ -88,16 +96,13 @@ class App(object):
         
     def run(self):
         while True:  
-            while True:
-                ret, self.frame = self.cam.read()
-                if ret:
-                    break
-                else:
-                    self.cam.release()
-                    self.cam=video.create_capture(self.server_address)
-                    print('connection break')
+            if not (self.cam.renew and self.cam.grabbed):           
+                continue
+            ret, self.frame = self.cam.read()
+            imshow_vis=self.frame.copy()
+                        
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-            mask,mask_car=mycamshift.filte_background_color(hsv,iterations=3)
+            mask=mycamshift.filte_background_color(hsv,iterations=3)
 
             if self.newcamshift is not None:
                 if self.newcamshift.preProcess(hsv,mask,self.selection,32):
@@ -108,16 +113,18 @@ class App(object):
             if ll>0:
                 light_gray=cv2.cvtColor(self.frame,cv2.COLOR_BGR2GRAY)
                 mean,temp = cv2.threshold(light_gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-
-                _,light_gray=cv2.threshold(light_gray,(255-mean)*0.8+mean,255,cv2.THRESH_BINARY)
-                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)),iterations=2, borderType=cv2.BORDER_REPLICATE)
+                thresh=(255-mean)*0.8+mean
+                if thresh>230:
+                    thresh=230
+                _,light_gray=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
+                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)),iterations=3, borderType=cv2.BORDER_REPLICATE)
         
                 cv2.imshow('light',light_gray)
                 
                 track_box=[self.light.go_once_gray(light_gray)]
                 
                 for x in self.list_camshift:
-                    track_box.append(x.go_once(hsv,mask_car))             
+                    track_box.append(x.go_once(hsv,mask))             
 
                 n=len(track_box)
                 if n>2:
@@ -138,13 +145,14 @@ class App(object):
                     if p1 and p2:
                         try:
                             #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            theta,D,dst=snap(mask,p1,p2,5,0.9,1.4)
+                            theta,D,dst=snap(mask,p1,p2,4.5,1.3,1.45,1.1)
                             dst=cv2.resize(dst,(400,200))
                             cv2.imshow('snap',dst)
                             if theta is not None:
                                 mes=(int(theta),int(D))
-                                print('Block ahead')
                                 self.mdp.send_message('avoid',mes)
+                                print('Block ahead')
+                                cv2.putText(imshow_vis, 'Block ahead:%s,%s' % mes, (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                                 print(mes)
 
                             elif p3:
@@ -152,19 +160,20 @@ class App(object):
                                 mes=(int(t),int(d))
                                 self.mdp.send_message('guidance',mes)
                                 print('guidance')
+                                cv2.putText(imshow_vis, 'Guidance:%s,%s' % mes, (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                                 print mes
                             else:
-                                print('lost')
+                                cv2.putText(imshow_vis, 'Taget LOST', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                                 self.mdp.send_message('lost')
                         except:
-                            print('0/0 is error')
+                            cv2.putText(imshow_vis, '0/0 is error', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                             self.mdp.send_message('lost')
                     else:
-                        print('lost')
+                        cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                         self.mdp.send_message('lost')
 
                 else:
-                    #print('lost')
+                    cv2.putText(imshow_vis, 'Taget LOST', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                     self.mdp.send_message('lost')
 
 
@@ -174,13 +183,17 @@ class App(object):
 
                 for x in track_box:
                     try:
-                        cv2.ellipse(self.frame, x, (0, 0, 255), 2) 
+                        cv2.ellipse(imshow_vis, x, (0, 0, 255), 2) 
+                        pts = cv2.boxPoints(x)
+                        pts = np.int0(pts)
+                        cv2.polylines(imshow_vis, [pts], True, 255, 2)
                     except:
                         pass
                         
 
             else:
-                #print('lost')
+                cv2.putText(imshow_vis, 'Wait for START', (10, 230),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                 self.mdp.send_message('lost')
             self.lock=True  
             
@@ -188,8 +201,15 @@ class App(object):
                 x0, y0, x1, y1 = self.selection
                 vis_roi = self.frame[y0:y1, x0:x1]
                 cv2.bitwise_not(vis_roi, vis_roi)
-              
-            cv2.imshow('TUCanshift',self.frame)
+            
+            fps = self.fps.approx_compute()
+            # print("FPS: {:.3f}".format(fps))
+            cv2.putText(imshow_vis, 'FPS {:.3f}'.format(fps), (10, 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255),
+                        1, cv2.LINE_AA) 
+            cv2.imshow('TUCanshift',imshow_vis)
+
+            
             #print (str(self.count))
             #self.count=self.count+1
             ch = cv2.waitKey(2)
