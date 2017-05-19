@@ -45,7 +45,7 @@ class mycamshift(object):
             #cv2.imshow('Back projection ' + str(param[2]), prob)
             
             # ret, prob = cv2.threshold(prob, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            ret, prob = cv2.threshold(prob, 80, 255, cv2.THRESH_BINARY)
+            ret, prob = cv2.threshold(prob, 100, 255, cv2.THRESH_BINARY)
             #cv2.imshow('Back projection thresh ' + str(param[2]), prob)
             
             # prob = cv2.morphologyEx(prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=2)
@@ -67,7 +67,7 @@ class mycamshift(object):
                                             cv2.THRESH_BINARY)
 
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=1)
+            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=2)
         back_proj_prob = cv2.morphologyEx(
             back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=2)
 
