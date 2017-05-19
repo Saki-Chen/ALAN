@@ -8,6 +8,7 @@ from camshift.mycamshift import mycamshift
 from camshift.analyze import *
 import camshift.video as video
 import time
+from calibration import fish_calibration
 
 from camshift.WebcamVideoStream import WebcamVideoStream
 
@@ -15,10 +16,12 @@ class App(object):
     def __init__(self, video_src):
         #树莓派ip
         self.server_address='http://192.168.40.146:8000/stream.mjpg'
+        #self.server_address=0
         #self.server_address='udp://@:8000 --demux=h264'
         #self.cam = video.create_capture(self.server_address)
         self.cam = WebcamVideoStream(self.server_address).start()
         ret, self.frame = self.cam.read()
+        self.fish_cali=fish_calibration(self.frame)
         self.drag_start = None
         self.list_camshift=[]
         self.show_backproj = False
@@ -99,6 +102,9 @@ class App(object):
             if not (self.cam.renew and self.cam.grabbed):           
                 continue
             ret, self.frame = self.cam.read()
+            
+            self.frame=self.fish_cali.cali(self.frame)
+
             imshow_vis=self.frame.copy()
                         
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
