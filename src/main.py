@@ -16,7 +16,7 @@ class App(object):
     def __init__(self, video_src):
         #树莓派ip
         self.server_address='http://192.168.40.146:8000/stream.mjpg'
-        #self.server_address=0
+        self.server_address=0
         #self.server_address='udp://@:8000 --demux=h264'
         #self.cam = video.create_capture(self.server_address)
         self.cam = WebcamVideoStream(self.server_address).start()
