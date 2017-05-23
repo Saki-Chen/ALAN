@@ -16,7 +16,8 @@ class App(object):
     def __init__(self, video_src):
         #树莓派ip
         self.server_address='http://192.168.40.146:8000/stream.mjpg'
-        self.server_address=0
+        #self.server_address='rtsp://:192.168.40.118/1'
+        #self.server_address=0
         #self.server_address='udp://@:8000 --demux=h264'
         #self.cam = video.create_capture(self.server_address)
         self.cam = WebcamVideoStream(self.server_address).start()
@@ -32,6 +33,7 @@ class App(object):
         #self.count=0
         self.light=self.get_light()
 
+        self.swicht=False
         #self.list_camshift.append(self.get_car('red.jpg',0))
         #self.list_camshift.append(self.get_car('green.jpg',1))
 
@@ -101,14 +103,16 @@ class App(object):
         while True:  
             if not (self.cam.renew and self.cam.grabbed):           
                 continue
-            ret, self.frame = self.cam.read()
             
+            ret, self.frame = self.cam.read()
+            #self.frame=cv2.GaussianBlur(self.frame,(5,5),2)
+            self.frame=cv2.medianBlur(self.frame,5)
             self.frame=self.fish_cali.cali(self.frame)
 
             imshow_vis=self.frame.copy()
                         
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-            mask=mycamshift.filte_background_color(hsv,iterations=3)
+            mask=mycamshift.filte_background_color(hsv,offset1=30,offset2=60, iterations=1)
 
             if self.newcamshift is not None:
                 if self.newcamshift.preProcess(hsv,mask,self.selection,32):
@@ -123,7 +127,7 @@ class App(object):
                 if thresh>230:
                     thresh=230
                 _,light_gray=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
-                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)),iterations=3, borderType=cv2.BORDER_REPLICATE)
+                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)),iterations=2, borderType=cv2.BORDER_REPLICATE)
         
                 cv2.imshow('light',light_gray)
                 
@@ -133,9 +137,10 @@ class App(object):
                     track_box.append(x.go_once(hsv,mask))             
 
                 n=len(track_box)
+                #if n>2:
                 if n>2:
                     p3=track_box[0]
-                    p1,p2=track_box[n-2:]
+                    p1,p2=track_box[n-2:]            
                     try:
                         p1=p1[0]
                     except:
@@ -151,7 +156,7 @@ class App(object):
                     if p1 and p2:
                         try:
                             #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            theta,D,dst=snap(mask,p1,p2,4,1.3,1.8,1.7)
+                            theta,D,dst=snap(mask,p1,p2,5.,1.7,1.9,2.4)
                             dst=cv2.resize(dst,(400,200))
                             cv2.imshow('snap',dst)
                             if theta is not None:

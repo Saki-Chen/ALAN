@@ -45,7 +45,7 @@ class mycamshift(object):
             #cv2.imshow('Back projection ' + str(param[2]), prob)
             
             # ret, prob = cv2.threshold(prob, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            ret, prob = cv2.threshold(prob, 75, 255, cv2.THRESH_BINARY)
+            ret, prob = cv2.threshold(prob, 100, 255, cv2.THRESH_BINARY)
             #cv2.imshow('Back projection thresh ' + str(param[2]), prob)
             
             # prob = cv2.morphologyEx(prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=2)
@@ -88,10 +88,46 @@ class mycamshift(object):
         V_hist = cv2.calcHist([hsv],[2], None,[255],[0,255])
         V = V_hist.argmax(axis=None, out=None)
 
-
         mask = cv2.inRange(hsv, np.array((H-offset1,S-offset2,0.)), np.array((H+offset1,S+offset2,255.)))
+
+        #mask_rid=cv2.morphologyEx(mask,cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5)), iterations=10, borderType=cv2.BORDER_REPLICATE)
+        #cv2.imshow('mask_rid',mask_rid)
+        mask,contours,_hierary=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+        mask_rid=mask.copy()
+        mask_rid[:,:]=0
+        cv2.drawContours(mask_rid,contours,-1,255,thickness=-1)  
+        #cv2.imshow('rid',mask_rid)
+
+        #area=0
+        #cnt=None
+        #con=cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+        #l=len(contours)
+        #for i in xrange(l):
+        #    temp=con.copy()
+        #    cv2.drawContours(temp,contours,i,(0,0,255),thickness=cv2.FILLED) 
+        #    cv2.imshow('c%s'%str(i),temp) 
+        #for c in contours:
+        #    temp=cv2.contourArea(c)
+        #    if temp > area:
+        #        area=temp
+        #        cnt=c
+        #if cnt is not None:
+        #    con=cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+        #    cv2.drawContours(con,contours,-1,(255,255,255),thickness=-1)  
+        #    cv2.imshow('con',con)
+            #mask_rid=mask.copy()
+            #cv2.drawContours(mask_rid,cnt,-1,255,-1)  
+            #cv2.imshow('mr',mask_rid)
+
+
+
+
+
+
+        
         mask=cv2.bitwise_not(mask)
-        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(4,4)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
+        mask&=mask_rid
+        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(2,2)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
 
         #hsv_mask=cv2.bitwise_and(hsv,hsv,mask=mask)
         #mask_car=cv2.inRange(hsv_mask,np.array((0.,0.,5.)),np.array((180.,255.,255.)))
@@ -171,7 +207,7 @@ class mycamshift(object):
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
         self.__track_window=self.adj_window(self.__track_window,1)
-        if(area<45):
+        if(area<25):
             print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None

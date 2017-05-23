@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*- 
 import struct
 import socket  
-
+import time
 class MyUdp(object):
     commands=dict(turn_right='\xAA\xBB\x55\x01\x04\x00\x66',
                   stop='\xAA\xBB\x55\x01\x04\x00\x00',
@@ -62,10 +62,10 @@ class MyUdp(object):
         else:
             return None
 
-if __name__=='__main__':
+if __name__=='__ain__':
     mdp=MyUdp()
     mdp.bind_host()
-    mdp.client_address=mdp.address
+    mdp.client_address=('192.168.40.31',8899)
     while True:
         input = raw_input()  
         if not input:  
@@ -81,8 +81,39 @@ if __name__=='__main__':
             for o in MyUdp.commands:
                 print o
             break
-        data, addr = mdp.recv_message()
-        data=MyUdp.getdata(data)
-        if data:
-            print "received:", data, "from", addr
+        #data, addr = mdp.recv_message()
+        #data=MyUdp.getdata(data)
+        #if data:
+        #    print "received:", data, "from", addr
+    mdp.close() 
+
+
+if __name__=='__main__':
+    mdp=MyUdp()
+    mdp.bind_host()
+    mdp.client_address=('192.168.40.31',8899)
+    angle=100
+    while True: 
+        try:
+            #两位数据位分开使用
+            time.sleep(0.5)
+            angle=angle*-1
+            o,i1,i2=('guidance',angle,abs(angle))
+            i=(i1,i2)
+            mdp.send_message(o,i)
+            o,i1,i2=('guidance',angle,abs(angle))
+            i=(i1,i2)
+            mdp.send_message(o,i)
+            o,i1,i2=('guidance',angle,abs(angle))
+            i=(i1,i2)
+            mdp.send_message(o,i)
+        except:
+            print 'no such a order\norderlist:'
+            for o in MyUdp.commands:
+                print o
+            break
+        #data, addr = mdp.recv_message()
+        #data=MyUdp.getdata(data)
+        #if data:
+        #    print "received:", data, "from", addr
     mdp.close() 
