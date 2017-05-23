@@ -61,7 +61,7 @@ def snap(src,p1,p2,k1=5,k2=1.2,adjustX=1.4,adjustY=1.1):
 def get_centroid(img_bin):
     _ ,contours, hierarchy = cv2.findContours(img_bin,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
     target=None
-    area=66
+    area=60
     for cnt in contours:
         M= cv2.moments(cnt)
         if M['m00']>area:

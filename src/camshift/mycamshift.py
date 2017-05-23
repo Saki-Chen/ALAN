@@ -67,9 +67,9 @@ class mycamshift(object):
                                             cv2.THRESH_BINARY)
 
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=2)
+            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=4)
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=2)
+            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=4)
 
         return back_proj_prob    
         
@@ -202,11 +202,12 @@ class mycamshift(object):
         #self.prob = cv2.calcBackProject([hsv], [0], self.__hist, [0, 180], 1)
         self.prob=self.calcBackProjection(hsv)
         self.prob &= mask
+        #_,self.prob=cv2.threshold(self.prob,80,255,cv2.THRESH_BINARY)
         cv2.imshow('prob',self.prob)
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
-        self.__track_window=self.adj_window(self.__track_window,1)
+        self.__track_window=self.adj_window(self.__track_window,2)
         if(area<25):
             print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
