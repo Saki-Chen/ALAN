@@ -207,7 +207,7 @@ class mycamshift(object):
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
-        self.__track_window=self.adj_window(self.__track_window,2)
+        #self.__track_window=self.adj_window(self.__track_window,1)
         if(area<25):
             print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
