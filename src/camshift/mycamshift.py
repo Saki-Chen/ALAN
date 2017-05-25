@@ -58,18 +58,20 @@ class mycamshift(object):
             cv2.addWeighted(ch_prob[0], 0.6, ch_prob[1], 0.4, 0))
 
         ch_back_proj_prob.append(
-            cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.4, 0))
+            cv2.addWeighted(ch_prob[0], 0.5, ch_prob[2], 0.5, 0))
 
         back_proj_prob = cv2.bitwise_and(ch_back_proj_prob[0],
                                          ch_back_proj_prob[1])
         #back_proj_prob=ch_back_proj_prob[0]
-        ret, back_proj_prob = cv2.threshold(back_proj_prob, 150, 255,
+
+        #Acht!
+        ret, back_proj_prob = cv2.threshold(back_proj_prob, 100, 255,
                                             cv2.THRESH_BINARY)
 
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=4)
+            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=2)
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=4)
+            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=2)
 
         return back_proj_prob    
         
@@ -150,7 +152,7 @@ class mycamshift(object):
         self.__framesize=(frame.shape[0],frame.shape[1])
         self.__track_window=(0,0,frame.shape[1],frame.shape[0])
 
-    def preProcess(self,hsv,mask,selection,n=16):     
+    def preProcess(self,hsv,mask,selection,n=32):     
         if selection is None:
             return False
         x0, y0, x1, y1 = selection
@@ -202,7 +204,7 @@ class mycamshift(object):
         #self.prob = cv2.calcBackProject([hsv], [0], self.__hist, [0, 180], 1)
         self.prob=self.calcBackProjection(hsv)
         self.prob &= mask
-        #_,self.prob=cv2.threshold(self.prob,80,255,cv2.THRESH_BINARY)
+        #_,self.prob=cv2.threshold(self.prob,10,255,cv2.THRESH_BINARY)
         cv2.imshow('prob',self.prob)
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
