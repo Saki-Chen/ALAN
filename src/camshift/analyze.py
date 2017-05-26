@@ -54,14 +54,14 @@ def snap(src,p1,p2,k1=5,k2=1.2,adjustX=1.4,adjustY=1.1):
             
             theta,D =get_direction((0,int(k2*L)),(int(L),int(k2*L)),p3)
             #D=int(130*(D-1)/(k1-1))
-            #D=127*D/k1
+            D=127*D/k1
 
     return (theta,D,dst)
 
 def get_centroid(img_bin):
     _ ,contours, hierarchy = cv2.findContours(img_bin,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
     target=None
-    area=35
+    area=30
     for cnt in contours:
         M= cv2.moments(cnt)
         if M['m00']>area:

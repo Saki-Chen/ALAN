@@ -55,17 +55,28 @@ class mycamshift(object):
             ch_prob.append(prob)
 
         ch_back_proj_prob.append(
-            cv2.addWeighted(ch_prob[0], 0.6, ch_prob[1], 0.4, 0))
-
+            cv2.addWeighted(ch_prob[0], 0.64, ch_prob[1], 0.36, 0))
+        cv2.imshow('cb1', ch_back_proj_prob[0])
         ch_back_proj_prob.append(
-            cv2.addWeighted(ch_prob[0], 0.5, ch_prob[2], 0.5, 0))
+            cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.4, 0))
+        cv2.imshow('cb2', ch_back_proj_prob[1])
 
-        back_proj_prob = cv2.bitwise_and(ch_back_proj_prob[0],
-                                         ch_back_proj_prob[1])
+        #_,ch_back_proj_prob[0] = cv2.threshold(ch_back_proj_prob[0], 70, 255,
+        #                                    cv2.THRESH_BINARY)
+        #_,ch_back_proj_prob[1] = cv2.threshold(ch_back_proj_prob[1], 70, 255,
+        #                                    cv2.THRESH_BINARY)
+
+
+        #back_proj_prob = cv2.bitwise_and(ch_back_proj_prob[0],
+        #                                 ch_back_proj_prob[1])
+        back_proj_prob=cv2.add(ch_back_proj_prob[0],ch_back_proj_prob[1])
+
+        #back_proj_prob=cv2.addWeighted(ch_prob[0], 0.7, ch_prob[2], 0.3, 0)
+        #back_proj_prob=cv2.addWeighted(ch_back_proj_prob[0],0.6,ch_back_proj_prob[1],0.4,0)
         #back_proj_prob=ch_back_proj_prob[0]
-
+        #back_proj_prob=ch_prob[2]
         #Acht!
-        ret, back_proj_prob = cv2.threshold(back_proj_prob, 100, 255,
+        ret, back_proj_prob = cv2.threshold(back_proj_prob, 200, 255,
                                             cv2.THRESH_BINARY)
 
         back_proj_prob = cv2.morphologyEx(
@@ -78,7 +89,7 @@ class mycamshift(object):
              
 
     @staticmethod
-    def filte_background_color(hsv,offset1=15.,offset2=60., iterations=1):
+    def filte_background_color(hsv,offset1=30.,offset2=256., iterations=3):
         #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
         #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
         #mask_area=cv2.bitwise_not(mask_area)
@@ -87,8 +98,8 @@ class mycamshift(object):
         H = H_hist.argmax(axis=None, out=None)
         S_hist = cv2.calcHist([hsv],[1], None,[255],[0,255])
         S = S_hist.argmax(axis=None, out=None)
-        V_hist = cv2.calcHist([hsv],[2], None,[255],[0,255])
-        V = V_hist.argmax(axis=None, out=None)
+        #V_hist = cv2.calcHist([hsv],[2], None,[255],[0,255])
+        #V = V_hist.argmax(axis=None, out=None)
 
         mask = cv2.inRange(hsv, np.array((H-offset1,S-offset2,0.)), np.array((H+offset1,S+offset2,255.)))
 
@@ -209,7 +220,7 @@ class mycamshift(object):
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
-        #self.__track_window=self.adj_window(self.__track_window,1)
+        #self.__track_window=self.adj_window(self.__track_window,3)
         if(area<25):
             print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
