@@ -36,8 +36,8 @@ class App(object):
         self.light=self.get_light()
 
         self.swicht=False
-        self.list_camshift.append(self.get_car('red.jpg',0))
-        self.list_camshift.append(self.get_car('yellow.jpg',1))
+        #self.list_camshift.append(self.get_car('red.jpg',0))
+        #self.list_camshift.append(self.get_car('yellow.jpg',1))
         
         
 
@@ -116,7 +116,7 @@ class App(object):
             imshow_vis=self.frame.copy()
                         
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-            mask=mycamshift.filte_background_color(hsv,offset1=30,offset2=256, iterations=3)
+            mask=mycamshift.filte_background_color(hsv,offset1=30,offset2=60, iterations=3)
 
             if self.newcamshift is not None:
                 if self.newcamshift.preProcess(hsv,mask,self.selection,16):
@@ -131,7 +131,7 @@ class App(object):
                 if thresh>230:
                     thresh=230
                 _,light_gray=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
-                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)),iterations=2, borderType=cv2.BORDER_REPLICATE)
+                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=2, borderType=cv2.BORDER_REPLICATE)
         
                 cv2.imshow('light',light_gray)
                 
@@ -160,7 +160,7 @@ class App(object):
                     if p1 and p2:
                         try:
                             #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            theta,D,dst=snap(mask,p1,p2,5.0,2.3,2.1,2.2)
+                            theta,D,dst=snap(mask,p1,p2,5.0,2.5,2.0,2.2)
                             dst=cv2.resize(dst,(400,200))
                             cv2.imshow('snap',dst)
                             if theta is not None:
@@ -187,6 +187,9 @@ class App(object):
                         cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                         self.mdp.send_message('lost')
 
+                elif n>1:
+                    cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+                    self.mdp.send_message('lost')
                 else:
                     cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                     #self.mdp.send_message('lost')

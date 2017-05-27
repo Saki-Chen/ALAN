@@ -55,7 +55,7 @@ class mycamshift(object):
             ch_prob.append(prob)
 
         ch_back_proj_prob.append(
-            cv2.addWeighted(ch_prob[0], 0.64, ch_prob[1], 0.36, 0))
+            cv2.addWeighted(ch_prob[0], 0.5, ch_prob[1], 0.5, 0))
         cv2.imshow('cb1', ch_back_proj_prob[0])
         ch_back_proj_prob.append(
             cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.4, 0))
@@ -76,13 +76,13 @@ class mycamshift(object):
         #back_proj_prob=ch_back_proj_prob[0]
         #back_proj_prob=ch_prob[2]
         #Acht!
-        ret, back_proj_prob = cv2.threshold(back_proj_prob, 200, 255,
+        ret, back_proj_prob = cv2.threshold(back_proj_prob, 230, 255,
                                             cv2.THRESH_BINARY)
 
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=2)
+            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=4)
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=2)
+            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=4)
 
         return back_proj_prob    
         
@@ -140,8 +140,10 @@ class mycamshift(object):
         
         mask=cv2.bitwise_not(mask)
         mask&=mask_rid
+        #mask=cv2.medianBlur(mask,5)
         mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(2,2)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
 
+       
         #hsv_mask=cv2.bitwise_and(hsv,hsv,mask=mask)
         #mask_car=cv2.inRange(hsv_mask,np.array((0.,0.,5.)),np.array((180.,255.,255.)))
         #mask_car=cv2.morphologyEx(mask_car,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(4,4)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
@@ -173,7 +175,18 @@ class mycamshift(object):
         mask_roi = mask[y0:y1, x0:x1]
 
         self.calcHSVhist( hsv_roi,mask_roi)
+        
         hist=self.histHSV[0]
+        h_max=hist.argmax(axis=None, out=None)
+        h_max_left=h_max-1
+        h_max_right=h_max+1
+        if h_max_left<0:
+            h_max_left=self.HSV_CHANNELS[0][0]-1
+        if h_max_right>self.HSV_CHANNELS[0][0]-1:
+            h_max_right=0
+        hist[h_max_left]=hist[h_max]
+        hist[h_max_right]=hist[h_max]
+
         #hist = cv2.calcHist( [hsv_roi], [0], mask_roi, [n], [0, 180] )
         cv2.normalize(hist, hist, 0, 255, cv2.NORM_MINMAX)
         self.__hist = hist.reshape(-1)       
