@@ -61,6 +61,9 @@ class mycamshift(object):
             cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.4, 0))
         cv2.imshow('cb2', ch_back_proj_prob[1])
 
+
+
+
         #_,ch_back_proj_prob[0] = cv2.threshold(ch_back_proj_prob[0], 70, 255,
         #                                    cv2.THRESH_BINARY)
         #_,ch_back_proj_prob[1] = cv2.threshold(ch_back_proj_prob[1], 70, 255,
@@ -69,7 +72,21 @@ class mycamshift(object):
 
         #back_proj_prob = cv2.bitwise_and(ch_back_proj_prob[0],
         #                                 ch_back_proj_prob[1])
+
+
+        back_proj_prob = cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.2, 0)
+        back_proj_prob = cv2.addWeighted(back_proj_prob,1,ch_prob[1],0.2,0)
+        back_proj_prob= cv2.medianBlur(back_proj_prob,5)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(back_proj_prob)
+        avg=cv2.mean(back_proj_prob)
+        #_,back_proj_prob = cv2.threshold(back_proj_prob,int((avg[0]+max_val)/2),255,cv2.THRESH_BINARY)
+        cv2.imshow('expe',back_proj_prob)
+
         back_proj_prob=cv2.add(ch_back_proj_prob[0],ch_back_proj_prob[1])
+
+
+
+
 
         #back_proj_prob=cv2.addWeighted(ch_prob[0], 0.7, ch_prob[2], 0.3, 0)
         #back_proj_prob=cv2.addWeighted(ch_back_proj_prob[0],0.6,ch_back_proj_prob[1],0.4,0)
