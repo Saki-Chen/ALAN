@@ -74,16 +74,20 @@ class mycamshift(object):
         #                                 ch_back_proj_prob[1])
 
 
-        back_proj_prob = cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.2, 0)
-        back_proj_prob = cv2.addWeighted(back_proj_prob,1,ch_prob[1],0.2,0)
-        back_proj_prob= cv2.medianBlur(back_proj_prob,5)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(back_proj_prob)
-        avg=cv2.mean(back_proj_prob)
-        #_,back_proj_prob = cv2.threshold(back_proj_prob,int((avg[0]+max_val)/2),255,cv2.THRESH_BINARY)
-        cv2.imshow('expe',back_proj_prob)
+        #back_proj_prob = cv2.addWeighted(ch_prob[0], 0.5, ch_prob[2], 0.2, 0)
+        #back_proj_prob = cv2.addWeighted(back_proj_prob,1,ch_prob[1],0.3,0)
+        #back_proj_prob= cv2.medianBlur(back_proj_prob,5)
+        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(back_proj_prob)
+        #max_val=int(max_val/2)
+        #if max_val<120:
+        #    max_val=120
+        
+        #print('max:%s  avg:%s' % (max_val,avg))
+        #_,back_proj_prob = cv2.threshold(back_proj_prob,max_val,255,cv2.THRESH_BINARY)
+        #cv2.imshow('expe',back_proj_prob)
 
         back_proj_prob=cv2.add(ch_back_proj_prob[0],ch_back_proj_prob[1])
-
+        cv2.imshow('pre',back_proj_prob)
 
 
 
@@ -93,7 +97,7 @@ class mycamshift(object):
         #back_proj_prob=ch_back_proj_prob[0]
         #back_proj_prob=ch_prob[2]
         #Acht!
-        ret, back_proj_prob = cv2.threshold(back_proj_prob, 230, 255,
+        ret, back_proj_prob = cv2.threshold(back_proj_prob,230, 255,
                                             cv2.THRESH_BINARY)
 
         back_proj_prob = cv2.morphologyEx(
