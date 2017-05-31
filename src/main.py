@@ -17,9 +17,9 @@ class App(object):
         #树莓派ip
         #self.server_address='rtmp://localhost/dji/stream.h264'
         #self.server_address='rtmp://127.0.0.1:1935/dji'
-        self.server_address='http://192.168.40.146:8000/stream.mjpg'
+        #self.server_address='http://192.168.40.146:8000/stream.mjpg'
         #self.server_address='rtsp://:192.168.40.118/1'
-        #self.server_address=0
+        self.server_address=0
         #self.server_address='udp://@:8000 --demux=h264'
         #self.cam = video.create_capture(self.server_address)
         self.cam = WebcamVideoStream(self.server_address).start()
@@ -38,7 +38,8 @@ class App(object):
         self.swicht=False
         #self.list_camshift.append(self.get_car('red.jpg',0))
         #self.list_camshift.append(self.get_car('yellow.jpg',1))
-        
+        #H,S
+        self.BACKGROUND_PARAM=App.calc_HS(cv2.cvtColor(self.frame,cv2.COLOR_BGR2HSV))
         
 
         self.fps = FPS().start()
@@ -102,6 +103,13 @@ class App(object):
 
         return temp
 
+    @staticmethod
+    def calc_HS(hsv):
+        H_hist = cv2.calcHist([hsv],[0], None,[180],[0,180])
+        H = H_hist.argmax(axis=None, out=None)
+        S_hist = cv2.calcHist([hsv],[1], None,[255],[0,255])
+        S = S_hist.argmax(axis=None, out=None)
+        return (H,S)
         
     def run(self):
         while True:  
@@ -116,7 +124,11 @@ class App(object):
             imshow_vis=self.frame.copy()
                         
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-            mask=mycamshift.filte_background_color(hsv,offset1=30,offset2=60, iterations=3)
+
+            #注掉使用背景参数的静态方法
+            self.BACKGROUND_PARAM=App.calc_HS(hsv)
+
+            mask=mycamshift.filte_background_color(hsv,self.BACKGROUND_PARAM,offset1=30.,offset2=60., iterations=3)
 
             if self.newcamshift is not None:
                 if self.newcamshift.preProcess(hsv,mask,self.selection,16):
@@ -131,7 +143,7 @@ class App(object):
                 if thresh>230:
                     thresh=230
                 _,light_gray=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
-                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=2, borderType=cv2.BORDER_REPLICATE)
+                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
         
                 cv2.imshow('light',light_gray)
                 
@@ -235,6 +247,8 @@ class App(object):
                 break
             if ch==ord('b'):
                 self.show_backproj=not self.show_backproj
+            if ch==ord('r'):
+                self.BACKGROUND_PARAM=App.calc_HS(hsv)
 
 
             #data, addr = self.mdp.recv_message()

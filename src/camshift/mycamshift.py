@@ -16,6 +16,7 @@ class mycamshift(object):
             (8, [0, 256], "sat"),  # Saturation
             (8, [0, 256], "val")  # Value
         )
+
         self.kernel_erode = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,
                                                                           3))
         self.kernel_dilate = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7,
@@ -108,21 +109,23 @@ class mycamshift(object):
         return back_proj_prob    
         
              
+    
+
 
     @staticmethod
-    def filte_background_color(hsv,offset1=30.,offset2=256., iterations=3):
+    def filte_background_color(hsv,BACKGROUND_PARAM,offset1=30.,offset2=60., iterations=3):
         #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
         #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
         #mask_area=cv2.bitwise_not(mask_area)
         #hsv=cv2.medianBlur(hsv,5)
-        H_hist = cv2.calcHist([hsv],[0], None,[180],[0,180])
-        H = H_hist.argmax(axis=None, out=None)
-        S_hist = cv2.calcHist([hsv],[1], None,[255],[0,255])
-        S = S_hist.argmax(axis=None, out=None)
+        #H_hist = cv2.calcHist([hsv],[0], None,[180],[0,180])
+        #H = H_hist.argmax(axis=None, out=None)
+        #S_hist = cv2.calcHist([hsv],[1], None,[255],[0,255])
+        #S = S_hist.argmax(axis=None, out=None)
         #V_hist = cv2.calcHist([hsv],[2], None,[255],[0,255])
         #V = V_hist.argmax(axis=None, out=None)
 
-        mask = cv2.inRange(hsv, np.array((H-offset1,S-offset2,0.)), np.array((H+offset1,S+offset2,255.)))
+        mask = cv2.inRange(hsv, np.array((BACKGROUND_PARAM[0]-offset1,BACKGROUND_PARAM[1]-offset2,0.)), np.array((BACKGROUND_PARAM[0]+offset1,BACKGROUND_PARAM[1]+offset2,255.)))
 
         #mask_rid=cv2.morphologyEx(mask,cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5)), iterations=10, borderType=cv2.BORDER_REPLICATE)
         #cv2.imshow('mask_rid',mask_rid)

@@ -62,7 +62,7 @@ class MyUdp(object):
         else:
             return None
 
-if __name__=='__ain__':
+if __name__=='__main__':
     mdp=MyUdp()
     mdp.bind_host()
     mdp.client_address=('192.168.40.31',8899)
@@ -88,7 +88,7 @@ if __name__=='__ain__':
     mdp.close() 
 
 
-if __name__=='__main__':
+if __name__=='__ain__':
     mdp=MyUdp()
     mdp.bind_host()
     mdp.client_address=('192.168.40.31',8899)
