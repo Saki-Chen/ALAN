@@ -3,7 +3,7 @@ import struct
 import socket  
 import time
 class MyUdp(object):
-    commands=dict(turn_right='\xAA\xBB\x55\x01\x04\x00\x66',
+    commands=dict(helm_motor='\xAA\xBB\x55\x01\x04\x00\x66',
                   stop='\xAA\xBB\x55\x01\x04\x00\x00',
                   start='\xAA\xBB\x55\x01\x04\x00\x77',
                   speed_up='\xAA\xBB\x55\x01\x04\x00\x88',
@@ -91,7 +91,7 @@ if __name__=='__ain__':
     mdp.close() 
 
 
-if __name__=='__ain__':
+if __name__=='__main__':
     mdp=MyUdp()
     mdp.bind_host()
     mdp.client_address=('192.168.40.31',8899)
@@ -121,6 +121,28 @@ if __name__=='__ain__':
         #    print "received:", data, "from", addr
     mdp.close() 
 
+if __name__=='__ain__':
+    mdp=MyUdp()
+    mdp.bind_host()
+    mdp.client_address=('192.168.40.31',8899)
+    while True:
+        input = raw_input()  
+        if not input:  
+            break  
+        #try:
+        input=input.split(',')
+        p=input[0]
+        data=struct.pack('>H',int(p))
+        temp='%s%s' % (MyUdp.commands['helm_motor'], data)   
+        num=struct.unpack_from('BBBBBBB',temp,offset=2)
+        c=num[0]
+        for n in xrange(len(num)-1):
+            c=c^num[n+1]
+        ck=struct.pack('B',c)
+        mes='%s%s' % (temp,ck)
+        mdp.udp.sendto(mes,mdp.client_address)
+
+    mdp.close() 
 
 if __name__=='__ain__':
     mdp=MyUdp()
@@ -145,18 +167,9 @@ if __name__=='__ain__':
         mes='%s%s' % (temp,c)
         mdp.udp.sendto(mes,mdp.client_address)
 
-        #except:
-        #    print 'no such a order\norderlist:'
-        #    for o in MyUdp.commands:
-        #        print o
-        #    break
-        #data, addr = mdp.recv_message()
-        #data=MyUdp.getdata(data)
-        #if data:
-        #    print "received:", data, "from", addr
     mdp.close() 
 
-if __name__=='__main__':
+if __name__=='__ain__':
     #import numpy as np
     #from matplotlib import pyplot as plt
     mdp=MyUdp()

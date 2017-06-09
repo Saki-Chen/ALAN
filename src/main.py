@@ -19,6 +19,8 @@ class App(object):
         #self.server_address='rtmp://localhost/dji/stream.h264'
         #self.server_address='rtmp://127.0.0.1:1935/dji'
         self.server_address='http://192.168.40.147:8000/stream.mjpg'
+        #self.server_address='http://192.168.191.3:8000/stream.mjpg'
+
         #self.server_address='rtsp://:192.168.40.118/1'
         #self.server_address=0
         #self.server_address='udp://@:8000 --demux=h264'
@@ -129,7 +131,7 @@ class App(object):
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
 
             #注掉使用背景参数的静态方法
-            #self.BACKGROUND_PARAM=App.calc_HS(hsv)
+            self.BACKGROUND_PARAM=App.calc_HS(hsv)
 
             mask=mycamshift.filte_background_color(hsv,self.BACKGROUND_PARAM,offset1=30.,offset2=120., iterations=3)
 
@@ -175,7 +177,7 @@ class App(object):
                     if p1 and p2:
                         try:
                             #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            theta,D,dst=snap(mask,p1,p2,7.0,1.45,2.6,2.2)
+                            theta,D,dst=snap(mask,p1,p2,7.0,0.8,2.2,2.2)
                             dst=cv2.resize(dst,(400,200))
                             cv2.imshow('snap',dst)
                             if theta is not None:
