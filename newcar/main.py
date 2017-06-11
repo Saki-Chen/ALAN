@@ -50,9 +50,9 @@ class App(object):
         self.fps = FPS().start()
 
         #wifi模块IP
-        self.mdp.client_address=('192.168.56.31', 8899)  
+        #self.mdp.client_address=('192.168.56.31', 8899)  
         #新车
-        #self.mdp.client_address=('192.168.56.207', 8899)  
+        self.mdp.client_address=('192.168.56.207', 8899)  
         cv2.namedWindow('TUCanshift')
         cv2.setMouseCallback('TUCanshift', self.onmouse)
 
@@ -181,10 +181,10 @@ class App(object):
                     if p1 and p2:
                         try:
                             #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            theta,D,dst=snap(mask,p1,p2,7.0,0.8,2.2,2.2)
+                            #theta,D,dst=snap(mask,p1,p2,7.0,0.8,2.2,2.2)
                             
                             #新车
-                            #theta,D,dst=snap(mask,p1,p2,5.5,0.75,2.35,2.2)
+                            theta,D,dst=snap(mask,p1,p2,5.5,0.75,2.35,2.2)
                             dst=cv2.resize(dst,(400,200))
                             cv2.imshow('snap',dst)
                             if theta is not None:
