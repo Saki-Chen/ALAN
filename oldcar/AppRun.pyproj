@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{bfbb222b-a983-418b-9153-57f6c6785826}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>udp\myudp.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -32,7 +32,6 @@
     <Compile Include="camshift\__init__.py" />
     <Compile Include="fps.py" />
     <Compile Include="main.py" />
-    <Compile Include="miste.py" />
     <Compile Include="udp\myudp.py" />
     <Compile Include="udp\__init__.py" />
   </ItemGroup>

@@ -17,14 +17,14 @@ class App(object):
         #树莓派ip
         self.mdp=MyUdp()
         #self.server_address='http://%s:8000/stream.mjpg' % MyUdp.get_piIP('raspberrypi')
-        #self.server_address='http://192.168.56.240:8000/stream.mjpg'
+        self.server_address='http://192.168.56.240:8000/stream.mjpg'
         #self.server_address='rtmp://127.0.0.1/live/stream'
         #self.server_address='rtmp://127.0.0.1:1935/dji'
         #self.server_address='http://192.168.56.146:8000/stream.mjpg'
         #self.server_address='http://192.168.191.3:8000/stream.mjpg'
 
         #self.server_address='rtsp://:192.168.40.118/1'
-        self.server_address=0
+        #self.server_address=0
         #self.server_address='udp://@:8000 --demux=h264'
         #self.cam = video.create_capture(self.server_address)
         self.cam = WebcamVideoStream(self.server_address).start()
@@ -46,15 +46,13 @@ class App(object):
         #H,S
         self.BACKGROUND_PARAM=App.calc_HS(cv2.cvtColor(self.frame,cv2.COLOR_BGR2HSV))
         
-        self.miste=True
 
         self.fps = FPS().start()
 
         #wifi模块IP
-        self.mdp.client_address=('192.168.56.31', 8899)  
-
+        #self.mdp.client_address=('192.168.56.31', 8899)  
         #新车
-        #self.mdp.client_address=('192.168.56.207', 8899)  
+        self.mdp.client_address=('192.168.56.207', 8899)  
         cv2.namedWindow('TUCanshift')
         cv2.setMouseCallback('TUCanshift', self.onmouse)
 
@@ -129,9 +127,7 @@ class App(object):
             
             ret, self.frame = self.cam.read()
             #self.frame=cv2.GaussianBlur(self.frame,(5,5),2)
-            
-            #self.frame=cv2.medianBlur(self.frame,5)
-            
+            self.frame=cv2.medianBlur(self.frame,5)
             #self.frame=self.fish_cali.cali(self.frame)
 
             imshow_vis=self.frame.copy()
@@ -141,9 +137,7 @@ class App(object):
             #注掉使用背景参数的静态方法
             self.BACKGROUND_PARAM=App.calc_HS(hsv)
 
-            mask=mycamshift.filte_background_color(hsv,self.BACKGROUND_PARAM,offset1=30.,offset2=90., iterations=3)
-            if self.miste:
-                cv2.imshow('fore_ground',mask)
+            mask=mycamshift.filte_background_color(hsv,self.BACKGROUND_PARAM,offset1=30.,offset2=80., iterations=3)
 
             if self.newcamshift is not None:
                 if self.newcamshift.preProcess(hsv,mask,self.selection,16):
@@ -159,8 +153,8 @@ class App(object):
                     thresh=230
                 _,light_gray=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
                 light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
-                if self.miste:
-                    cv2.imshow('light',light_gray)
+        
+                cv2.imshow('light',light_gray)
                 
                 track_box=[self.light.go_once_gray(light_gray)]
                 
@@ -187,28 +181,26 @@ class App(object):
                     if p1 and p2:
                         try:
                             #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            theta,D,dst=snap(mask,p1,p2,7.0,0.8,2.2,2.2)
+                            #theta,D,dst=snap(mask,p1,p2,7.0,0.8,2.2,2.2)
                             
-
                             #新车
-                            #theta,D,dst=snap(mask,p1,p2,5.5,0.75,2.35,2.2)
+                            theta,D,dst=snap(mask,p1,p2,5.5,0.75,2.35,2.2)
                             dst=cv2.resize(dst,(400,200))
-                            if self.miste:
-                                cv2.imshow('snap',dst)
+                            cv2.imshow('snap',dst)
                             if theta is not None:
                                 mes=(int(theta),int(D))
                                 self.mdp.send_message('avoid',mes)
-                                #print('Block ahead')
+                                print('Block ahead')
                                 cv2.putText(imshow_vis, 'Block ahead:%s,%s' % mes, (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                                #print(mes)
+                                print(mes)
 
                             elif p3:
                                 t,d=get_direction(p1,p2,p3)
                                 mes=(int(t),int(d))
                                 self.mdp.send_message('guidance',mes)
-                                #print('guidance')
+                                print('guidance')
                                 cv2.putText(imshow_vis, 'Guidance:%s,%s' % mes, (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                                #print mes
+                                print mes
                             else:
                                 cv2.putText(imshow_vis, 'Taget LOST', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                                 self.mdp.send_message('lost')
@@ -257,9 +249,7 @@ class App(object):
             cv2.putText(imshow_vis, 'FPS {:.3f}'.format(fps), (10, 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255),
                         1, cv2.LINE_AA) 
-
-            if self.miste:
-                cv2.imshow('TUCanshift',imshow_vis)
+            cv2.imshow('TUCanshift',imshow_vis)
 
             
             #print (str(self.count))
@@ -275,8 +265,6 @@ class App(object):
                 self.mdp.send_message('guidance',(0,10))
             if ch==ord('p'):
                 self.mdp.send_message('back_car',(0,0))
-            if ch==ord(';'):
-                self.miste=not self.miste
 
 
             #data, addr = self.mdp.recv_message()

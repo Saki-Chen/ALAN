@@ -42,7 +42,7 @@ def snap(src,p1,p2,k1=5,k2=1.2,adjustX=1.4,adjustY=1.1):
         #offsetY=int(L*adjustY/2)
         
         avoid=cv2.resize(dst[:,offsetX:],(400-offsetX,200))
-        #cv2.imshow('avoid',avoid)
+        cv2.imshow('avoid',avoid)
         
         #dst_0=cv2.resize(dst,(400,200))
         #cv2.imshow('snap_0',dst_0)
