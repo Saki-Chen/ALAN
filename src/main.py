@@ -17,14 +17,14 @@ class App(object):
         #树莓派ip
         self.mdp=MyUdp()
         #self.server_address='http://%s:8000/stream.mjpg' % MyUdp.get_piIP('raspberrypi')
-        #self.server_address='http://192.168.56.240:8000/stream.mjpg'
+        self.server_address='http://192.168.43.110:8000/stream.mjpg'
         #self.server_address='rtmp://127.0.0.1/live/stream'
         #self.server_address='rtmp://127.0.0.1:1935/dji'
         #self.server_address='http://192.168.56.146:8000/stream.mjpg'
         #self.server_address='http://192.168.191.3:8000/stream.mjpg'
 
         #self.server_address='rtsp://:192.168.40.118/1'
-        self.server_address=0
+        #self.server_address=0
         #self.server_address='udp://@:8000 --demux=h264'
         #self.cam = video.create_capture(self.server_address)
         self.cam = WebcamVideoStream(self.server_address).start()
