@@ -57,10 +57,10 @@ class mycamshift(object):
 
         ch_back_proj_prob.append(
             cv2.addWeighted(ch_prob[0], 0.5, ch_prob[1], 0.5, 0))
-        cv2.imshow('cb1', ch_back_proj_prob[0])
+        #cv2.imshow('cb1', ch_back_proj_prob[0])
         ch_back_proj_prob.append(
-            cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.4, 0))
-        cv2.imshow('cb2', ch_back_proj_prob[1])
+            cv2.addWeighted(ch_prob[0], 0.5, ch_prob[2], 0.5, 0))
+        #cv2.imshow('cb2', ch_back_proj_prob[1])
 
 
 
@@ -88,7 +88,8 @@ class mycamshift(object):
         #cv2.imshow('expe',back_proj_prob)
 
         back_proj_prob=cv2.add(ch_back_proj_prob[0],ch_back_proj_prob[1])
-        cv2.imshow('pre',back_proj_prob)
+        
+        #cv2.imshow('pre',back_proj_prob)
 
 
 
@@ -101,10 +102,10 @@ class mycamshift(object):
         ret, back_proj_prob = cv2.threshold(back_proj_prob,230, 255,
                                             cv2.THRESH_BINARY)
 
-        back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=4)
-        back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=4)
+        #back_proj_prob = cv2.morphologyEx(
+        #    back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=4)
+        #back_proj_prob = cv2.morphologyEx(
+        #    back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=4)
 
         return back_proj_prob    
         
@@ -128,7 +129,8 @@ class mycamshift(object):
         mask = cv2.inRange(hsv, np.array((BACKGROUND_PARAM[0]-offset1,BACKGROUND_PARAM[1]-offset2,0.)), np.array((BACKGROUND_PARAM[0]+offset1,BACKGROUND_PARAM[1]+offset2,255.)))
 
         #mask_rid=cv2.morphologyEx(mask,cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5)), iterations=10, borderType=cv2.BORDER_REPLICATE)
-        #cv2.imshow('mask_rid',mask_rid)
+        #cv2.imshow('mask0',mask)
+       
         mask,contours,_hierary=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
         mask_rid=mask.copy()
         mask_rid[:,:]=0
@@ -162,10 +164,12 @@ class mycamshift(object):
 
 
         
-        mask=cv2.bitwise_not(mask)
-        mask&=mask_rid
-        #mask=cv2.medianBlur(mask,5)
-        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(2,2)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
+        #mask=cv2.bitwise_not(mask) 
+        #mask&=mask_rid
+        
+        mask=cv2.bitwise_xor(mask,mask_rid)
+
+        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
 
        
         #hsv_mask=cv2.bitwise_and(hsv,hsv,mask=mask)
@@ -181,7 +185,7 @@ class mycamshift(object):
 
         #cv2.imshow('hsv_mask',hsv_mask)
         #cv2.imshow('mask_car',mask_car)
-        cv2.imshow('fore_ground',mask)
+        #cv2.imshow('fore_ground',mask)
         #return mask,mask_car
         return mask
 
@@ -250,16 +254,22 @@ class mycamshift(object):
         if not(self.__track_window and self.__track_window[2] > 0 and self.__track_window[3] > 0):
             raise Exception('跟踪窗未定义或者出错')
         #self.prob = cv2.calcBackProject([hsv], [0], self.__hist, [0, 180], 1)
+        
+        hsv=cv2.bitwise_and(hsv,hsv,mask=mask)
+        
+
         self.prob=self.calcBackProjection(hsv)
-        self.prob &= mask
+        
+        #self.prob &= mask
+        
         #_,self.prob=cv2.threshold(self.prob,10,255,cv2.THRESH_BINARY)
-        cv2.imshow('prob',self.prob)
+        #cv2.imshow('prob',self.prob)
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
         #self.__track_window=self.adj_window(self.__track_window,3)
         if(area<25):
-            print('Target %s is Lost' % self.ID)
+            #print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None
         return track_box
@@ -269,13 +279,14 @@ class mycamshift(object):
             raise Exception('跟踪窗未定义或者出错')
         
         #小心这条语句能过滤一些反光点，也能把灯滤掉，注意调节kernel大小和iterations
-        img_gray=cv2.morphologyEx(img_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)),iterations=2, borderType=cv2.BORDER_REFLECT)     
+        #img_gray=cv2.morphologyEx(img_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)),iterations=2, borderType=cv2.BORDER_REFLECT)     
+        
         self.prob = img_gray
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
         if(area<45):
-            print('Target %s is Lost' % self.ID)
+            #print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None
         return track_box

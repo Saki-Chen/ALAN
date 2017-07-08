@@ -165,7 +165,7 @@ class mycamshift(object):
         mask=cv2.bitwise_not(mask)
         mask&=mask_rid
         #mask=cv2.medianBlur(mask,5)
-        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(2,2)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
+        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_RECT,(3,3)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
 
        
         #hsv_mask=cv2.bitwise_and(hsv,hsv,mask=mask)

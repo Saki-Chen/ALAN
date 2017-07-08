@@ -38,7 +38,7 @@ class WebcamVideoStream:
                     break
                 else:
                     self.stream.release()  
-                    raise Exception('connection break')     
+                    #raise Exception('connection break')     
                    
                     self.stream=cv2.VideoCapture(self.address)
                     print('connection break')
