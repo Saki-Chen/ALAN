@@ -28,7 +28,10 @@ class mycamshift(object):
             # Init HSV histogram
             hist = cv2.calcHist([hsvRoi], [channel], mask_roi, [param[0]],
                                 param[1])
+            
             hist = cv2.normalize(hist, hist, 0, 255, cv2.NORM_MINMAX)
+           
+           
             self.histHSV.append(hist)
             # Show hist of each channel separately
             #self.show_hist(hist, param[2])
@@ -39,7 +42,7 @@ class mycamshift(object):
         ch_back_proj_prob = []
         # back_proj_prob = np.ones(shape=(self.height, self.width), dtype=np.uint8) * 255
         # back_proj_prob = np.zeros(shape=(self.height, self.width), dtype=np.uint8)
-
+        #cv2.imshow('ll',cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR))
         for channel, param in enumerate(self.HSV_CHANNELS):
             prob = cv2.calcBackProject([hsv], [channel],
                                        self.histHSV[channel], param[1], 1)
@@ -59,7 +62,7 @@ class mycamshift(object):
             cv2.addWeighted(ch_prob[0], 0.5, ch_prob[1], 0.5, 0))
         #cv2.imshow('cb1', ch_back_proj_prob[0])
         ch_back_proj_prob.append(
-            cv2.addWeighted(ch_prob[0], 0.5, ch_prob[2], 0.5, 0))
+            cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.4, 0))
         #cv2.imshow('cb2', ch_back_proj_prob[1])
 
 
@@ -99,14 +102,14 @@ class mycamshift(object):
         #back_proj_prob=ch_back_proj_prob[0]
         #back_proj_prob=ch_prob[2]
         #Acht!
-        ret, back_proj_prob = cv2.threshold(back_proj_prob,230, 255,
+        ret, back_proj_prob = cv2.threshold(back_proj_prob,250, 255,
                                             cv2.THRESH_BINARY)
-
-        #back_proj_prob = cv2.morphologyEx(
-        #    back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=4)
-        #back_proj_prob = cv2.morphologyEx(
-        #    back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=4)
-
+        
+        back_proj_prob = cv2.morphologyEx(
+            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=4)
+        back_proj_prob = cv2.morphologyEx(
+            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=4)
+        #cv2.imshow('pre',back_proj_prob)
         return back_proj_prob    
         
              
@@ -114,7 +117,7 @@ class mycamshift(object):
 
 
     @staticmethod
-    def filte_background_color(hsv,BACKGROUND_PARAM,offset1=30.,offset2=60., iterations=3):
+    def filte_background_color(hsv,BACKGROUND_PARAM,offset1=30.,offset2=60., iterations=2):
         #mask_area=cv2.inRange(hsv,np.array((100.,30.,30.)),np.array((124.,255.,255.)))
         #mask_area=cv2.morphologyEx(mask_area,cv2.MORPH_BLACKHAT,cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
         #mask_area=cv2.bitwise_not(mask_area)
@@ -131,10 +134,12 @@ class mycamshift(object):
         #mask_rid=cv2.morphologyEx(mask,cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5)), iterations=10, borderType=cv2.BORDER_REPLICATE)
         #cv2.imshow('mask0',mask)
        
+        #切边
         mask,contours,_hierary=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
         mask_rid=mask.copy()
         mask_rid[:,:]=0
         cv2.drawContours(mask_rid,contours,-1,255,thickness=-1)  
+        
         #cv2.imshow('rid',mask_rid)
 
         #area=0
@@ -163,13 +168,17 @@ class mycamshift(object):
 
 
 
-        
+        #不开切边
         #mask=cv2.bitwise_not(mask) 
-        #mask&=mask_rid
-        
+        #切边
         mask=cv2.bitwise_xor(mask,mask_rid)
+        
+        mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=4, borderType=cv2.BORDER_REPLICATE)
+        mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
 
-        mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
+        #cv2.imshow('ll',cv2.cvtColor(cv2.bitwise_and(hsv,hsv,mask=mask),cv2.COLOR_HSV2BGR))
+
+        #mask=cv2.morphologyEx(mask,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)),iterations=iterations, borderType=cv2.BORDER_REPLICATE)
 
        
         #hsv_mask=cv2.bitwise_and(hsv,hsv,mask=mask)
@@ -206,6 +215,9 @@ class mycamshift(object):
         
         hist=self.histHSV[0]
         h_max=hist.argmax(axis=None, out=None)
+        
+        self.h_max=h_max
+        
         h_max_left=h_max-1
         h_max_right=h_max+1
         if h_max_left<0:
@@ -226,7 +238,7 @@ class mycamshift(object):
         if self.__hist is None:
             return None
         bin_count = self.__hist.shape[0]
-        bin_w = 24
+        bin_w = self.HSV_CHANNELS[0][0]
         img = np.zeros((256, bin_count*bin_w, 3), np.uint8)
         for i in xrange(bin_count):
             h = int(self.__hist[i])
@@ -255,23 +267,41 @@ class mycamshift(object):
             raise Exception('跟踪窗未定义或者出错')
         #self.prob = cv2.calcBackProject([hsv], [0], self.__hist, [0, 180], 1)
         
-        hsv=cv2.bitwise_and(hsv,hsv,mask=mask)
+        #_hsv=cv2.bitwise_and(hsv,hsv,mask=mask)
         
-
+       
         self.prob=self.calcBackProjection(hsv)
         
-        #self.prob &= mask
+        self.prob &= mask
         
         #_,self.prob=cv2.threshold(self.prob,10,255,cv2.THRESH_BINARY)
-        #cv2.imshow('prob',self.prob)
+        cv2.imshow('prob',self.prob)
         term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
         track_box, self.__track_window = cv2.CamShift(self.prob, self.__track_window, term_crit)
         area=track_box[1][0]*track_box[1][1];
         #self.__track_window=self.adj_window(self.__track_window,3)
-        if(area<25):
+        if(area<15):
             #print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None
+        #mask_roi=mask.copy()
+        #mask_roi[:,:]=0
+        #try:
+        #    mask_roi=cv2.ellipse(mask_roi,track_box,255,-1)
+        #except:
+        #    return None
+        #cv2.imshow('wkk',mask_roi)
+
+        #check_hist=cv2.calcHist([hsv],[0],mask_roi,[self.HSV_CHANNELS[0][0]],self.HSV_CHANNELS[0][1])
+        #bin_count = check_hist.shape[0]
+        #bin_w = 24
+        #img = np.zeros((256, bin_count*bin_w, 3), np.uint8)
+        #for i in xrange(bin_count):
+        #    h = int(self.__hist[i])
+        #    cv2.rectangle(img, (i*bin_w+2, 255), ((i+1)*bin_w-2, 255-h), (int(180.0*i/bin_count), 255, 255), -1)
+        #return cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
+
+
         return track_box
 
     def go_once_gray(self,img_gray):

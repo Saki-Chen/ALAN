@@ -8,6 +8,7 @@ class WebcamVideoStream:
         # from the stream
         self.address=src
         self.stream = cv2.VideoCapture(src)
+        
         #self.stream.set(3, resolution[0])
         #self.stream.set(4, resolution[1])
         (self.grabbed, self.frame) = self.stream.read()
