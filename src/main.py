@@ -17,7 +17,7 @@ class App(object):
         #树莓派ip
         self.mdp=MyUdp()
         #self.server_address='http://%s:8000/stream.mjpg' % MyUdp.get_piIP('raspberrypi')
-        #self.server_address='http://192.168.43.110:8000/stream.mjpg'
+        self.server_address='http://192.168.56.146:8080/?action=stream'
         #self.server_address='rtmp://127.0.0.1/live/stream'
         #self.server_address='rtmp://127.0.0.1:1935/dji'
         #self.server_address='http://192.168.56.240:8000/stream.mjpg'
@@ -26,10 +26,10 @@ class App(object):
         #self.server_address='http://192.168.191.3:8000/stream.mjpg'
 
         #self.server_address='rtsp://:192.168.40.118/1'
-        self.server_address=1
+        #self.server_address=0
         #self.server_address='udp://@:8000 --demux=h264'
-        self.cam = video.create_capture(self.server_address)
-        #self.cam = WebcamVideoStream(self.server_address).start()
+        #self.cam = video.create_capture(self.server_address)
+        self.cam = WebcamVideoStream(self.server_address).start()
         ret, self.frame = self.cam.read()
         #self.fish_cali=fish_calibration(self.frame)
         self.drag_start = None
@@ -38,10 +38,14 @@ class App(object):
         self.newcamshift=None
         self.selection=None
         self.lock=False
+        self.lastorder=None
+        self.track_box=[]
         self.first_start=False
         self.lastime=time.time()
+        self.lastime_car=time.time()
         self.sumtime=0
-
+        self.car_lost_time=0
+        self.car_lost=False
         #self.count=0
         self.light=self.get_light()
 
@@ -129,10 +133,10 @@ class App(object):
         
     def run(self):
         while True:  
-            #if not (self.cam.renew and self.cam.grabbed): 
-            #    if not self.cam.grabbed:
-            #        self.mdp.send_message('lost')          
-            #    continue
+            if not (self.cam.renew and self.cam.grabbed): 
+                if not self.cam.grabbed:
+                    self.mdp.send_message('lost')          
+                continue
             
             ret, self.frame = self.cam.read()
             self.frame=cv2.resize(self.frame,(640,480))
@@ -155,142 +159,163 @@ class App(object):
 
             if self.newcamshift is not None:
                 if self.newcamshift.preProcess(hsv,mask,self.selection,16):
-                    cv2.imshow(str(ll),self.newcamshift.getHist())   
+                    cv2.imshow(str(ll),self.newcamshift.getHist())  
+                    
+            light_gray=cv2.cvtColor(self.frame,cv2.COLOR_BGR2GRAY)
+            #cv2.imshow('gray',light_gray)
+            mean,temp = cv2.threshold(light_gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+            thresh=(255-mean)*0.8+mean
+            if thresh>230:
+                thresh=230
 
-            self.lock=False
-            ll=len(self.list_camshift) 
-            if ll>0:
-                light_gray=cv2.cvtColor(self.frame,cv2.COLOR_BGR2GRAY)
-                #cv2.imshow('gray',light_gray)
-                mean,temp = cv2.threshold(light_gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-                thresh=(255-mean)*0.8+mean
-                if thresh>230:
-                    thresh=230
+            #_,light_gray=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
+                
+            _,light_gray_ths=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
+            light_gray=cv2.bitwise_and(light_gray,light_gray,mask=cv2.bitwise_and(mask,light_gray_ths))
+            light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
+                
+            if self.miste:
+                cv2.imshow('light',light_gray)    
 
-                #_,light_gray=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
+            self.track_box=[self.light.go_once_gray(light_gray)]
                 
-                _,light_gray_ths=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
-                light_gray=cv2.bitwise_and(light_gray,light_gray,mask=cv2.bitwise_and(mask,light_gray_ths))
-                light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
-                
-
-                if self.miste:
-                    cv2.imshow('light',light_gray)
-                
-                track_box=[self.light.go_once_gray(light_gray)]
-                
-                if track_box[0] is None:
-                    self.sumtime=time.time()-self.lastime+self.sumtime
-                else:
-                    self.sumtime=0
-                    self.first_start=True
-                self.lastime=time.time()
+            if self.track_box[0] is None:
+                self.sumtime=time.time()-self.lastime+self.sumtime
+            else:
+                self.sumtime=0
+                self.first_start=True
+            self.lastime=time.time()
                 #print self.sumtime
                 
-                if self.sumtime>0.6 and self.first_start:
-                    print 'lost light GUIDANCE'
-                    track_box[0]=((self.frame.shape[1]/2,self.frame.shape[0]/2),)
-                if self.sumtime>3600:
-                    self.sumtime=36
+            if self.sumtime>0.2 and self.first_start:
+                print 'lost light GUIDANCE'
+                self.track_box=[(self.frame.shape[1]/2,self.frame.shape[0]/2)]
+            if self.sumtime>3600:
+                self.sumtime=36                    
+                     
 
+            self.lock=False
+            ll=len(self.list_camshift)            
+            if ll>0:
                 #mask_hsv=cv2.bitwise_and(hsv,hsv,mask=mask)
-                #cv2.imshow('mask_hsv',mask_hsv)
-                
+                #cv2.imshow('mask_hsv',mask_hsv)       
                 for x in self.list_camshift:
-                    track_box.append(x.go_once(hsv,mask))             
-
-                n=len(track_box)
-                #if n>2:
-                if n>2:
-                    p3=track_box[0]
-                    p1,p2=track_box[n-2:]            
-                    try:
-                        p1=p1[0]
-                    except:
-                        p1=None
-                    try:
-                        p2=p2[0]
-                    except:
-                        p2=None
-                    try:
-                        p3=p3[0]
-                    except:
-                        p3=None
-                    if p1 and p2:
-                        try:
-                            #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
-                            #theta,D,dst=snap(mask,p1,p2,7.0,0.8,2.2,2.2)
-                            
-
-                            #新车
-                            theta,D,dst=snap(mask,p1,p2,8.0,0.9,2.2,2.2)
-                            #theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,6.0,2.0,2.1,2.2)
-
-                            dst=cv2.resize(dst,(400,200))
-                            if self.miste:
-                                cv2.imshow('snap',dst)
-                            if theta is not None:
-                                mes=(int(theta),int(D))
-                                self.mdp.send_message('avoid',mes)
-                                #print('Block ahead')
-                                cv2.putText(imshow_vis, 'Block ahead:%s,%s' % mes, (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                                #print(mes)
-
-                            elif p3:
-                                t,d=get_direction(p1,p2,p3)
-                                mes=(int(t),int(d))
-                                self.mdp.send_message('guidance',mes)
-                                #print('guidance')
-                                cv2.putText(imshow_vis, 'Guidance:%s,%s' % mes, (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                                #print mes
-                            else:
-                                cv2.putText(imshow_vis, 'Taget LOST', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                                self.mdp.send_message('lost')
-                        except:
-                            cv2.putText(imshow_vis, '0/0 is error', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                            self.mdp.send_message('lost')
-                    else:
-                        cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                        self.mdp.send_message('lost')
-
-                elif n>1:
-                    cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                    self.mdp.send_message('lost')
-                else:
-                    cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                    #self.mdp.send_message('lost')
-
-
+                    self.track_box.append(x.go_once(hsv,mask))             
                 #prob=self.list_camshift[ll-1].prob
                 #if self.show_backproj and prob is not None:
                 #    self.frame=prob[...,np.newaxis]
+            else:
+                cv2.putText(imshow_vis, 'Wait for START', (10, 230),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+                #self.mdp.send_message('lost')
+            self.lock=True
+            
+            n=len(self.track_box)
+            #if n>2:
+            if n==3:
+                p3=self.track_box[0]
+                p1,p2=self.track_box[n-2:]            
+                try:
+                    p1=p1[0]
+                except:
+                    p1=None
+                try:
+                    p2=p2[0]
+                except:
+                    p2=None
+                try:
+                    p3=p3[0]
+                except:
+                    p3=None
+                if p1 and p2:
+                    try:
+                        #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
+                        #theta,D,dst=snap(mask,p1,p2,7.0,0.8,2.2,2.2)
+                            
+                        #新车
+                        theta,D,dst=snap(mask,p1,p2,8.0,0.9,2.2,2.2)
+                        #theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,6.0,2.0,2.1,2.2)
 
-                for x in track_box:
+                        dst=cv2.resize(dst,(400,200))
+                        if self.miste:
+                            cv2.imshow('snap',dst)
+                        if theta is not None:
+                            mes=(int(theta),int(D))
+                            self.mdp.send_message('avoid',mes)
+
+                            self.lastorder=('avoid',mes)
+
+                            #print('Block ahead')
+                            cv2.putText(imshow_vis, 'Block ahead:%s,%s' % mes, (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+                            #print(mes)
+
+                        elif p3:
+                            t,d=get_direction(p1,p2,p3)
+                            mes=(int(t),int(d))
+                            self.mdp.send_message('guidance',mes)
+
+                            self.lastorder=('guidance',mes)
+
+                            #print('guidance')
+                            cv2.putText(imshow_vis, 'Guidance:%s,%s' % mes, (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+                            #print mes
+                        else:
+                            cv2.putText(imshow_vis, 'Taget LOST', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+                            self.mdp.send_message('lost')
+                    except:
+                        cv2.putText(imshow_vis, '0/0 is error', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+                        self.mdp.send_message('lost')
+                else:
+                    cv2.putText(imshow_vis, 'Car LOST', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+                    self.car_lost=True
+                    self.mdp.send_message('lost')
+#            elif n>1:
+#                cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+#                self.mdp.send_message('lost')
+            else:
+                cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
+                
+                self.mdp.send_message('lost')
+
+            if self.car_lost and self.first_start:
+                self.car_lost=False
+                self.car_lost_time=time.time()-self.lastime_car+self.car_lost_time
+            else:
+                self.car_lost_time=0
+            self.lastime_car=time.time()
+
+            if self.car_lost_time>0.2 and self.first_start and self.lastorder is not None:
+                o,m=self.lastorder
+                if m[0]<33 and m[0]>=0:
+                    m=(33,m[1])
+                if m[0]>-33 and m[0]<0:
+                    m=(-33,m[1])
+                self.mdp.send_message(o,m)
+                print 'car LOST guidance'
+
+            if len(self.track_box) >0:
+                for x in self.track_box:
                     try:
                         cv2.ellipse(imshow_vis, x, (0, 0, 255), 2) 
                         pts = cv2.boxPoints(x)
                         pts = np.int0(pts)
                         cv2.polylines(imshow_vis, [pts], True, 255, 2)
                     except:
-                        pass
-                        
-
-            else:
-                cv2.putText(imshow_vis, 'Wait for START', (10, 230),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                #self.mdp.send_message('lost')
-            self.lock=True  
+                        pass           
             
-            if self.selection is not None:
-                x0, y0, x1, y1 = self.selection
-                vis_roi = self.frame[y0:y1, x0:x1]
-                cv2.bitwise_not(vis_roi, vis_roi)
+            
+
             
             fps = self.fps.approx_compute()
             # print("FPS: {:.3f}".format(fps))
             cv2.putText(imshow_vis, 'FPS {:.3f}'.format(fps), (10, 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255),
                         1, cv2.LINE_AA) 
+
+            if self.selection is not None:
+                x0, y0, x1, y1 = self.selection
+                vis_roi = imshow_vis[y0:y1, x0:x1]
+                cv2.bitwise_not(vis_roi, vis_roi)
 
             if self.miste:
                 cv2.imshow('TUCanshift',imshow_vis)
@@ -314,7 +339,7 @@ class App(object):
             if ch==ord('s'):
                 self.mdp.send_message('back_car',(0,0))
             if ch==ord('['):
-                self.miste=not self.miste            
+                self.miste=not self.miste
             if ch==ord('j'):
                 self.first_start=False
                 while True:
