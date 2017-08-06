@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ProfilingTarget xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ProjectTarget>
+    <TargetProject>bfbb222b-a983-418b-9153-57f6c6785826</TargetProject>
+    <FriendlyName>AppRun</FriendlyName>
+  </ProjectTarget>
+</ProfilingTarget>

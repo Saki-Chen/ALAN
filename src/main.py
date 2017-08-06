@@ -17,7 +17,7 @@ class App(object):
         #树莓派ip
         self.mdp=MyUdp()
         #self.server_address='http://%s:8000/stream.mjpg' % MyUdp.get_piIP('raspberrypi')
-        self.server_address='http://192.168.56.146:8080/?action=stream'
+        #self.server_address='http://192.168.56.146:8080/?action=stream'
         #self.server_address='rtmp://127.0.0.1/live/stream'
         #self.server_address='rtmp://127.0.0.1:1935/dji'
         #self.server_address='http://192.168.56.240:8000/stream.mjpg'
@@ -26,10 +26,10 @@ class App(object):
         #self.server_address='http://192.168.191.3:8000/stream.mjpg'
 
         #self.server_address='rtsp://:192.168.40.118/1'
-        #self.server_address=0
-        #self.server_address='udp://@:8000 --demux=h264'
-        #self.cam = video.create_capture(self.server_address)
-        self.cam = WebcamVideoStream(self.server_address).start()
+        self.server_address=1
+        #self.server_address='C:\\Users\\Carole\\Desktop\\as.mp4'
+        self.cam = video.create_capture(self.server_address)
+        #self.cam = WebcamVideoStream(self.server_address).start()
         ret, self.frame = self.cam.read()
         #self.fish_cali=fish_calibration(self.frame)
         self.drag_start = None
@@ -41,6 +41,7 @@ class App(object):
         self.lastorder=None
         self.track_box=[]
         self.first_start=False
+        self.car_found_first=False
         self.lastime=time.time()
         self.lastime_car=time.time()
         self.sumtime=0
@@ -133,10 +134,10 @@ class App(object):
         
     def run(self):
         while True:  
-            if not (self.cam.renew and self.cam.grabbed): 
-                if not self.cam.grabbed:
-                    self.mdp.send_message('lost')          
-                continue
+            #if not (self.cam.renew and self.cam.grabbed): 
+            #    if not self.cam.grabbed:
+            #        self.mdp.send_message('lost')          
+            #    continue
             
             ret, self.frame = self.cam.read()
             self.frame=cv2.resize(self.frame,(640,480))
@@ -228,6 +229,7 @@ class App(object):
                 except:
                     p3=None
                 if p1 and p2:
+                    self.car_found_first=True
                     try:
                         #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
                         #theta,D,dst=snap(mask,p1,p2,7.0,0.8,2.2,2.2)
@@ -261,14 +263,14 @@ class App(object):
                             #print mes
                         else:
                             cv2.putText(imshow_vis, 'Taget LOST', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                            self.mdp.send_message('lost')
+                            #self.mdp.send_message('lost')
                     except:
                         cv2.putText(imshow_vis, '0/0 is error', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                         self.mdp.send_message('lost')
                 else:
                     cv2.putText(imshow_vis, 'Car LOST', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
                     self.car_lost=True
-                    self.mdp.send_message('lost')
+                    #self.mdp.send_message('lost')
 #            elif n>1:
 #                cv2.putText(imshow_vis, 'Wait for START', (10, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
 #                self.mdp.send_message('lost')
@@ -284,7 +286,7 @@ class App(object):
                 self.car_lost_time=0
             self.lastime_car=time.time()
 
-            if self.car_lost_time>0.2 and self.first_start and self.lastorder is not None:
+            if self.car_lost_time>0.2 and self.car_found_first and self.first_start and self.lastorder is not None:
                 o,m=self.lastorder
                 if m[0]<33 and m[0]>=0:
                     m=(33,m[1])
