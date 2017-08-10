@@ -8,9 +8,9 @@ class WebcamVideoStream:
         # from the stream
         self.address=src
         self.stream = cv2.VideoCapture(src)
-        
-        #self.stream.set(3, resolution[0])
-        #self.stream.set(4, resolution[1])
+        self.stream.set(cv2.CAP_PROP_SETTINGS, 1)
+        #self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 640);  
+        #self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 480); 
         (self.grabbed, self.frame) = self.stream.read()
         self.renew=False
         # initialize the variable used to indicate if the thread should
