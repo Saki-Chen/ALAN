@@ -54,4 +54,5 @@ class WebcamVideoStream:
         self.stopped = True
     def release(self):
         self.stop()
+        self.stream.release()
        

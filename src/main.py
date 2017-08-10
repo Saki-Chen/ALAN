@@ -54,7 +54,8 @@ class App(object):
         #self.list_camshift.append(self.get_car('red.jpg',0))
         #self.list_camshift.append(self.get_car('yellow.jpg',1))
         #H,S
-        self.mask_avoid=cv2.cvtColor(cv2.imread('C:\\Users\\nuc\\Desktop\\src\\mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
+        #self.mask_avoid=cv2.cvtColor(cv2.imread('C:\\Users\\nuc\\Desktop\\src\\mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
+        self.mask_avoid=cv2.cvtColor(cv2.imread('mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
 
         self.BACKGROUND_PARAM=App.calc_HS(cv2.cvtColor(self.frame,cv2.COLOR_BGR2HSV))
         
@@ -63,7 +64,8 @@ class App(object):
         self.fps = FPS().start()
 
         #wifi模块IP
-        self.mdp.client_address=('192.168.137.233', 8899)  
+        import socket
+        self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
 
         #新车
         #self.mdp.client_address=('192.168.56.207', 8899)  
