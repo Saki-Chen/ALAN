@@ -236,11 +236,23 @@ class App(object):
                     try:
                         #snap(img,p1,p2,障碍侦测范围，障碍侦测宽度，微调：避免将车头识别为障碍)
                         #theta,D,dst=snap(mask,p1,p2,4.5,0.75,2.0,2.2)
-			#theta,D,dst=snap_c(mask,p1,p2,4.5,1.7,1.7,1.65)
+			            #theta,D,dst=snap_c(mask,p1,p2,4.5,1.7,1.7,1.65)
                             
                         #新车
                         #theta,D,dst=snap(mask,p1,p2,8.0,0.9,2.2,2.2)
-                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,6.0,0.9,1.9,2.2)
+                        #if p3:
+                        #    try:
+                        #        t_guidance,d_guidance=get_direction(p1,p2,p3)
+                        #    except:
+                        #        t_guidance=None
+                        #        d_guidance=None
+                        #    if t_guidance is not None and d_guidance is not None:
+                        #        if abs(t_guidance)<39 and d_guidance<3:
+                        #            mask=light_gray
+
+
+
+                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,6.0,1.2,1.9,2.2)
                         dst=cv2.resize(dst,(400,200))
                         if self.miste:
                             cv2.imshow('snap',dst)

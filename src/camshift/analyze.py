@@ -74,8 +74,7 @@ def snap_c(src,p1,p2,k1=5,k2=1.2,adjustX=1.4,adjustY=1.1):
         
         offsetX=int(L*adjustX)        
         offsetY=int(L*adjustY/2)
-        
-	dst_0=cv2.resize(dst,(400,200))
+        dst_0=cv2.resize(dst,(400,200))
         cv2.imshow('snap_0',dst_0)
         dst[int(k2*L)-offsetY:int(k2*L)+offsetY,:offsetX]=0
         p3=get_centroid(dst)
