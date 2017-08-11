@@ -74,7 +74,7 @@ class MyUdp(object):
         else:
             return None
 
-if __name__=='__main__':
+if __name__=='__ain__':
     mdp=MyUdp()
     mdp.bind_host()
     mdp.client_address=('192.168.56.61',8899)
@@ -130,10 +130,10 @@ if __name__=='__ain__':
         #    print "received:", data, "from", addr
     mdp.close() 
 
-if __name__=='__ain__':
+if __name__=='__main__':
     mdp=MyUdp()
     #mdp.bind_host()
-    mdp.client_address=('192.168.56.61',8899)
+    mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)
     while True:
         input = raw_input()  
         if not input:  

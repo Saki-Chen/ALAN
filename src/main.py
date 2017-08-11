@@ -48,6 +48,8 @@ class App(object):
         self.car_lost_time=0
         self.car_lost=False
         #self.count=0
+
+        
         self.light=self.get_light()
 
         self.swicht=False
@@ -65,7 +67,12 @@ class App(object):
 
         #wifi模块IP
         import socket
-        self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
+        while True:
+            try:
+                self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
+                break
+            except:
+                print 'Doit_WiFi NOT FOUND'
 
         #新车
         #self.mdp.client_address=('192.168.56.207', 8899)  
@@ -240,19 +247,23 @@ class App(object):
                             
                         #新车
                         #theta,D,dst=snap(mask,p1,p2,8.0,0.9,2.2,2.2)
-                        #if p3:
-                        #    try:
-                        #        t_guidance,d_guidance=get_direction(p1,p2,p3)
-                        #    except:
-                        #        t_guidance=None
-                        #        d_guidance=None
-                        #    if t_guidance is not None and d_guidance is not None:
-                        #        if abs(t_guidance)<39 and d_guidance<3:
-                        #            mask=light_gray
+
+
+                        if p3:
+                            try:
+                                t_guidance,d_guidance=get_direction(p1,p2,p3)
+                            except:
+                                t_guidance=None
+                                d_guidance=None
+                            if t_guidance is not None and d_guidance is not None:
+                                if abs(t_guidance)<50 and d_guidance<4:
+                                    mask=light_gray
+                                if abs(t_guidance)<20 and d_guidance<7:
+                                    mask=light_gray
 
 
 
-                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,6.0,1.2,1.9,2.2)
+                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,5.0,1.3,1.7,2.2)
                         dst=cv2.resize(dst,(400,200))
                         if self.miste:
                             cv2.imshow('snap',dst)
