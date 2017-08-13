@@ -17,12 +17,12 @@ class App(object):
         #树莓派ip
         self.mdp=MyUdp()
         #self.server_address='http://%s:8000/stream.mjpg' % MyUdp.get_piIP('raspberrypi')
-        #self.server_address='http://192.168.8.1:8083/?action=stream'
+        #self.server_address='http://192.168.56.146:8080/?action=stream'
         #self.server_address='rtmp://127.0.0.1/live/stream'
         #self.server_address='rtmp://127.0.0.1:1935/dji'
         #self.server_address='http://192.168.56.240:8000/stream.mjpg'
         
-        #self.server_address='192.168.8.1/stream'
+        #self.server_address='http://192.168.56.240:8000/?action=stream'
         #self.server_address='http://192.168.191.3:8000/stream.mjpg'
 
         #self.server_address='rtsp://:192.168.40.118/1'
@@ -48,16 +48,14 @@ class App(object):
         self.car_lost_time=0
         self.car_lost=False
         #self.count=0
-
-        
         self.light=self.get_light()
 
         self.swicht=False
         #self.list_camshift.append(self.get_car('red.jpg',0))
         #self.list_camshift.append(self.get_car('yellow.jpg',1))
         #H,S
-        #self.mask_avoid=cv2.cvtColor(cv2.imread('C:\\Users\\nuc\\Desktop\\src\\mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
-        self.mask_avoid=cv2.cvtColor(cv2.imread('mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
+        self.mask_avoid=cv2.cvtColor(cv2.imread('C:\\Users\\nuc\\Desktop\\src\\mask_avoid_1.bmp'),cv2.COLOR_BGR2GRAY)
+        #self.mask_avoid=cv2.cvtColor(cv2.imread('mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
 
         self.BACKGROUND_PARAM=App.calc_HS(cv2.cvtColor(self.frame,cv2.COLOR_BGR2HSV))
         
@@ -175,7 +173,7 @@ class App(object):
             light_gray=cv2.cvtColor(self.frame,cv2.COLOR_BGR2GRAY)
             #cv2.imshow('gray',light_gray)
             mean,temp = cv2.threshold(light_gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-            thresh=(255-mean)*0.8+mean
+            thresh=(255-mean)*0.7+mean
             if thresh>230:
                 thresh=230
 
@@ -247,8 +245,6 @@ class App(object):
                             
                         #新车
                         #theta,D,dst=snap(mask,p1,p2,8.0,0.9,2.2,2.2)
-
-
                         if p3:
                             try:
                                 t_guidance,d_guidance=get_direction(p1,p2,p3)
@@ -256,14 +252,15 @@ class App(object):
                                 t_guidance=None
                                 d_guidance=None
                             if t_guidance is not None and d_guidance is not None:
-                                if abs(t_guidance)<50 and d_guidance<4:
+                                if abs(t_guidance)<70 and d_guidance<4:
                                     mask=light_gray
                                 if abs(t_guidance)<20 and d_guidance<7:
                                     mask=light_gray
 
 
 
-                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,5.0,1.3,1.7,2.2)
+
+                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,5,1.0,1.9,2.2)
                         dst=cv2.resize(dst,(400,200))
                         if self.miste:
                             cv2.imshow('snap',dst)
