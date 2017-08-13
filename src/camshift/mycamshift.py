@@ -106,9 +106,9 @@ class mycamshift(object):
                                             cv2.THRESH_BINARY)
         
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=4)
+            back_proj_prob, cv2.MORPH_ERODE, self.kernel_erode, iterations=3)
         back_proj_prob = cv2.morphologyEx(
-            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=4)
+            back_proj_prob, cv2.MORPH_DILATE, self.kernel_erode, iterations=3)
         #cv2.imshow('pre',back_proj_prob)
         return back_proj_prob    
         

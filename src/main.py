@@ -17,12 +17,12 @@ class App(object):
         #树莓派ip
         self.mdp=MyUdp()
         #self.server_address='http://%s:8000/stream.mjpg' % MyUdp.get_piIP('raspberrypi')
-        #self.server_address='http://192.168.56.146:8080/?action=stream'
+        #self.server_address='http://192.168.8.1:8083/?action=stream'
         #self.server_address='rtmp://127.0.0.1/live/stream'
         #self.server_address='rtmp://127.0.0.1:1935/dji'
         #self.server_address='http://192.168.56.240:8000/stream.mjpg'
         
-        #self.server_address='http://192.168.56.240:8000/?action=stream'
+        #self.server_address='192.168.8.1/stream'
         #self.server_address='http://192.168.191.3:8000/stream.mjpg'
 
         #self.server_address='rtsp://:192.168.40.118/1'
@@ -183,7 +183,7 @@ class App(object):
                 
             _,light_gray_ths=cv2.threshold(light_gray,thresh,255,cv2.THRESH_BINARY)
             light_gray=cv2.bitwise_and(light_gray,light_gray,mask=cv2.bitwise_and(mask,light_gray_ths))
-            light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
+            light_gray=cv2.morphologyEx(light_gray,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=2, borderType=cv2.BORDER_REPLICATE)
                 
             if self.miste:
                 cv2.imshow('light',light_gray)    
