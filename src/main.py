@@ -311,10 +311,10 @@ class App(object):
 
             if self.car_lost_time>0.5 and self.car_found_first and self.first_start and self.lastorder is not None:
                 o,m=self.lastorder
-                if m[0]<33 and m[0]>=0:
-                    m=(33,m[1])
-                if m[0]>-33 and m[0]<0:
-                    m=(-33,m[1])
+                if m[0]<50 and m[0]>=0:
+                    m=(50,m[1])
+                if m[0]>-50 and m[0]<0:
+                    m=(-50,m[1])
                 self.mdp.send_message(o,m)
                 print 'car LOST guidance'
 
@@ -372,12 +372,6 @@ class App(object):
                     ob=cv2.waitKey(1)
                     if ob==ord('k'):
                         break
-
-
-            #data, addr = self.mdp.recv_message()
-            #data=MyUdp.getdata(data)
-            #if data:
-            #    print "received:", data, "from", addr
 
         cv2.destroyAllWindows()
         self.cam.release()
