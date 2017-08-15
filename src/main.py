@@ -54,8 +54,8 @@ class App(object):
         #self.list_camshift.append(self.get_car('red.jpg',0))
         #self.list_camshift.append(self.get_car('yellow.jpg',1))
         #H,S
-        #self.mask_avoid=cv2.cvtColor(cv2.imread('C:\\Users\\nuc\\Desktop\\src\\mask_avoid_1.bmp'),cv2.COLOR_BGR2GRAY)
-        self.mask_avoid=cv2.cvtColor(cv2.imread('mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
+        self.mask_avoid=cv2.cvtColor(cv2.imread('C:\\Users\\nuc\\Desktop\\src\\mask_avoid_1.bmp'),cv2.COLOR_BGR2GRAY)
+        #self.mask_avoid=cv2.cvtColor(cv2.imread('mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
 
         self.BACKGROUND_PARAM=App.calc_HS(cv2.cvtColor(self.frame,cv2.COLOR_BGR2HSV))
         
@@ -260,7 +260,7 @@ class App(object):
 
 
 
-                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,5.0,1.0,1.9,2.2)
+                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,5.0,1.0,2.1,2.2)
                         dst=cv2.resize(dst,(400,200))
                         if self.miste:
                             cv2.imshow('snap',dst)
