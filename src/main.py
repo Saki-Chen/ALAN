@@ -31,7 +31,7 @@ class App(object):
         #self.cam = video.create_capture(self.server_address)
         self.cam = WebcamVideoStream(self.server_address).start()
         ret, self.frame = self.cam.read()
-        #self.fish_cali=fish_calibration(self.frame)
+        self.fish_cali=fish_calibration((560,420))
         self.drag_start = None
         self.list_camshift=[]
         #self.show_backproj = False
@@ -147,13 +147,13 @@ class App(object):
                 continue
             
             ret, self.frame = self.cam.read()
-            self.frame=cv2.resize(self.frame,(560,420),interpolation=cv2.INTER_AREA)
+            #self.frame=cv2.resize(self.frame,(560,420),interpolation=cv2.INTER_AREA)
 
             #self.frame=cv2.GaussianBlur(self.frame,(5,5),2)
             
             #self.frame=cv2.medianBlur(self.frame,5)
             
-            #self.frame=self.fish_cali.cali(self.frame)
+            self.frame=self.fish_cali.cali(self.frame)
 
             imshow_vis=self.frame.copy()
                         

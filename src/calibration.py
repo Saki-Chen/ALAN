@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-
+import pickle
 import cv2
 import numpy as np
 class fish_calibration(object):
-    def __init__(self,frame):
-        self.mtx=np.array([[374.67766648,               0.,    298.18696809],
-                  [          0.,     374.41912695,    214.30454882],
-                  [          0.,               0.,             1. ]])
-        self.dist=np.array([[ -3.29607823e-01,   9.94071879e-02,   1.69540168e-03,  -1.61912063e-04,-2.33603492e-03]])
-        h, w = frame.shape[:2]
-        self.newcameramtx, self.roi = cv2.getOptimalNewCameraMatrix(self.mtx,self.dist,(w,h),1,(w,h)) 
+    def __init__(self,img_size):
+        data=pickle.load(open("cam_calibration.p",'rb'))
+        mtx=data['mtx']
+        dist=data['dist']
+        dist=np.array([dist[0][0], dist[0][1], dist[0][2], dist[0][3], dist[0][4]/1.48])
+        #640x480为标定用图像分辨率
+        newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(640,480),0,img_size)
+        self.mapx,self.mapy = cv2.initUndistortRectifyMap(mtx,dist,None,newcameramtx,img_size,5)
+
     def cali(self,frame):       
-        dst = cv2.undistort(frame,self.mtx,self.dist,None,self.newcameramtx)  
-        x,y,w,h = self.roi  
-        return dst[y:y+h,x:x+w]
+        return cv2.remap(frame,self.mapx,self.mapy,cv2.INTER_LINEAR)
