@@ -260,7 +260,7 @@ class App(object):
 
 
 
-                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,5.0,1.0,2.1,2.2)
+                        theta,D,dst=snap_test(mask,self.mask_avoid,p1,p2,5.0,0.9,2.2,2.2)
                         dst=cv2.resize(dst,(400,200))
                         if self.miste:
                             cv2.imshow('snap',dst)

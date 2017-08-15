@@ -130,7 +130,9 @@ class mycamshift(object):
         #V = V_hist.argmax(axis=None, out=None)
 
         mask = cv2.inRange(hsv, np.array((BACKGROUND_PARAM[0]-offset1,BACKGROUND_PARAM[1]-offset2,0.)), np.array((BACKGROUND_PARAM[0]+offset1,BACKGROUND_PARAM[1]+offset2,255.)))
-
+        mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
+        mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
+        
         #mask_rid=cv2.morphologyEx(mask,cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5)), iterations=10, borderType=cv2.BORDER_REPLICATE)
         #cv2.imshow('mask0',mask)
        
@@ -140,28 +142,19 @@ class mycamshift(object):
         mask_rid[:,:]=0
         cv2.drawContours(mask_rid,contours,-1,255,thickness=-1)  
         
-        #cv2.imshow('rid',mask_rid)
+        
 
-        #area=0
-        #cnt=None
-        #con=cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
-        #l=len(contours)
-        #for i in xrange(l):
-        #    temp=con.copy()
-        #    cv2.drawContours(temp,contours,i,(0,0,255),thickness=cv2.FILLED) 
-        #    cv2.imshow('c%s'%str(i),temp) 
-        #for c in contours:
-        #    temp=cv2.contourArea(c)
+        #area=640*480/100
+        #for cnt in contours:
+        #    cnt = cv2.convexHull(cnt) 
+        #    temp=cv2.contourArea(cnt)
         #    if temp > area:
-        #        area=temp
-        #        cnt=c
-        #if cnt is not None:
-        #    con=cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
-        #    cv2.drawContours(con,contours,-1,(255,255,255),thickness=-1)  
-        #    cv2.imshow('con',con)
-            #mask_rid=mask.copy()
-            #cv2.drawContours(mask_rid,cnt,-1,255,-1)  
-            #cv2.imshow('mr',mask_rid)
+        #        cv2.drawContours(mask_rid,[cnt],-1,255,thickness=-1)
+
+
+        #cv2.imshow('rid',mask_rid)
+                
+
 
 
 
@@ -171,10 +164,11 @@ class mycamshift(object):
         #不开切边
         #mask=cv2.bitwise_not(mask) 
         #切边
-        mask=cv2.bitwise_xor(mask,mask_rid)
+        mask=cv2.bitwise_not(mask)
+        mask=cv2.bitwise_and(mask,mask_rid)
         
-        mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
-        mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
+        #mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
+        #mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
 
         #cv2.imshow('ll',cv2.cvtColor(cv2.bitwise_and(hsv,hsv,mask=mask),cv2.COLOR_HSV2BGR))
 
