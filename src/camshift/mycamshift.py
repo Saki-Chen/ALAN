@@ -62,7 +62,7 @@ class mycamshift(object):
             cv2.addWeighted(ch_prob[0], 0.5, ch_prob[1], 0.5, 0))
         #cv2.imshow('cb1', ch_back_proj_prob[0])
         ch_back_proj_prob.append(
-            cv2.addWeighted(ch_prob[0], 0.6, ch_prob[2], 0.4, 0))
+            cv2.addWeighted(ch_prob[0], 0.5, ch_prob[2], 0.5, 0))
         #cv2.imshow('cb2', ch_back_proj_prob[1])
 
 
@@ -174,7 +174,7 @@ class mycamshift(object):
         mask=cv2.bitwise_xor(mask,mask_rid)
         
         mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
-        mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=2, borderType=cv2.BORDER_REPLICATE)
+        mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
 
         #cv2.imshow('ll',cv2.cvtColor(cv2.bitwise_and(hsv,hsv,mask=mask),cv2.COLOR_HSV2BGR))
 
