@@ -57,7 +57,7 @@ class mycamshift(object):
             # back_proj_prob = cv2.bitwise_and(back_proj_prob, prob)
             # back_proj_prob = cv2.addWeighted(back_proj_prob, 0.4, prob, 0.6, 0)
             ch_prob.append(prob)
-
+     
         ch_back_proj_prob.append(
             cv2.addWeighted(ch_prob[0], 0.5, ch_prob[1], 0.5, 0))
         #cv2.imshow('cb1', ch_back_proj_prob[0])
