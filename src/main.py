@@ -1,6 +1,7 @@
 ﻿# -*- coding: UTF-8 -*- 
 import cv2
 import numpy as np
+import socket
 # local module
 from fps import FPS
 from udp.myudp import MyUdp
@@ -64,7 +65,7 @@ class App(object):
         self.fps = FPS().start()
 
         #wifi模块IP
-        import socket
+
         while True:
             try:
                 self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
@@ -375,7 +376,7 @@ class App(object):
                         print 'Doit_WiFi NOT FOUND'
                     else:
                         print 'NEW IP:%s' % self.mdp.client_address[0]
-                    ob=cv2.waitKey(1)
+                    ob=cv2.waitKey(20)
                     if ob==ord('k'):
                         break
 
