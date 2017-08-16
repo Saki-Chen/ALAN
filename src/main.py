@@ -40,7 +40,7 @@ class App(object):
         self.lock=False
         self.lastorder=None
         self.track_box=[]
-        self.first_start=False
+        self.first_start=True
         self.car_found_first=False
         self.lastime=time.time()
         self.lastime_car=time.time()
@@ -366,9 +366,15 @@ class App(object):
             if ch==ord('['):
                 self.miste=not self.miste
             if ch==ord('j'):
-                self.first_start=False
+                #self.first_start=False
                 while True:
-                    self.mdp.send_message('lost')
+                    try:
+                        self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
+                        self.mdp.send_message('lost')
+                    except:
+                        print 'Doit_WiFi NOT FOUND'
+                    else:
+                        print 'NEW IP:%s' % self.mdp.client_address[0]
                     ob=cv2.waitKey(1)
                     if ob==ord('k'):
                         break
