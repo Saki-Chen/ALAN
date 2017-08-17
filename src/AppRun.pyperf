@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ProfilingTarget xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ProjectTarget>
+    <TargetProject>bfbb222b-a983-418b-9153-57f6c6785826</TargetProject>
+    <FriendlyName>AppRun</FriendlyName>
+  </ProjectTarget>
+  <Reports>
+    <Report>
+      <Filename>C:\Users\Carole\AppData\Local\Temp\AppRun_20170721(1).vsp</Filename>
+    </Report>
+    <Report>
+      <Filename>C:\Users\Carole\AppData\Local\Temp\AppRun_20170721(2).vsp</Filename>
+    </Report>
+  </Reports>
+</ProfilingTarget>

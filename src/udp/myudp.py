@@ -77,7 +77,7 @@ class MyUdp(object):
 if __name__=='__ain__':
     mdp=MyUdp()
     mdp.bind_host()
-    mdp.client_address=('192.168.40.25',8899)
+    mdp.client_address=('192.168.8.100',8899)
     while True:
         input = raw_input()  
         if not input:  
@@ -133,7 +133,7 @@ if __name__=='__ain__':
 if __name__=='__main__':
     mdp=MyUdp()
     #mdp.bind_host()
-    mdp.client_address=('192.168.56.31',8899)
+    mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)
     while True:
         input = raw_input()  
         if not input:  
@@ -156,7 +156,7 @@ if __name__=='__main__':
 if __name__=='__ain__':
     mdp=MyUdp()
     mdp.bind_host()
-    mdp.client_address=('192.168.56.31',8899)
+    mdp.client_address=('192.168.56.61',8899)
     while True:
         input = raw_input()  
         if not input:  
