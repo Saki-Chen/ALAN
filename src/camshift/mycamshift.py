@@ -131,10 +131,10 @@ class mycamshift(object):
 
         mask = cv2.inRange(hsv, np.array((BACKGROUND_PARAM[0]-offset1,BACKGROUND_PARAM[1]-offset2,0.)), np.array((BACKGROUND_PARAM[0]+offset1,BACKGROUND_PARAM[1]+offset2,255.)))
         mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)	
-        mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)),iterations=1, borderType=cv2.BORDER_REPLICATE)
+        mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)),iterations=2, borderType=cv2.BORDER_REPLICATE)
 	    #mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(1,1)),iterations=5, borderType=cv2.BORDER_REPLICATE)
 	    #mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(1,1)),iterations=5, borderType=cv2.BORDER_REPLICATE)
-        mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)),iterations=1, borderType=cv2.BORDER_REPLICATE)
+        mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)),iterations=2, borderType=cv2.BORDER_REPLICATE)
         mask=cv2.erode(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)
         
         #mask_rid=cv2.morphologyEx(mask,cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5)), iterations=10, borderType=cv2.BORDER_REPLICATE)
