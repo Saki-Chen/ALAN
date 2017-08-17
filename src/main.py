@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import socket
 import pyHook
+import pickle
 # local module
 from fps import FPS
 from udp.myudp import MyUdp
@@ -35,7 +36,15 @@ class App(object):
         ret, self.frame = self.cam.read()
         self.fish_cali=fish_calibration((560,420))
         self.drag_start = None
-        self.list_camshift=[]
+        try:
+            self.list_camshift=pickle.load(open("color_instant.p","rb"))
+        except:
+            self.list_camshift=[]
+            print 'Load color_instant.p FAIL...'
+        else:
+            print 'Load color_instant.p Success!!!'
+
+        #self.list_camshift=[]
         #self.show_backproj = False
         self.newcamshift=None
         self.selection=None
@@ -99,6 +108,11 @@ class App(object):
         if event.Key=='S':
             print 'S'
             self.mdp.send_message('back_car',(0,0))
+        #if event.Key=='B':
+        #    if len(self.list_camshift)==2:
+        #        pickle.dump(self.list_camshift,open("color_instant.p","wb"))
+        #        print 'Dump Success!'
+
 
         return True
     def onmouse(self, event, x, y, flags, param):
@@ -106,7 +120,7 @@ class App(object):
             if event == cv2.EVENT_RBUTTONDOWN:
                 self.pop_camshift()
                 return
-            if event == cv2.EVENT_LBUTTONDOWN:
+            if event == cv2.EVENT_LBUTTONDOWN and len(self.list_camshift)<=1:
                 self.drag_start = (x, y)
                 self.newcamshift=mycamshift()
             if self.drag_start:                  
@@ -370,17 +384,23 @@ class App(object):
             if self.miste:
                 cv2.imshow('TUCanshift',imshow_vis)
 
-            if not self.first_start:
-                print 'WAIT...'
-            else:
-                print 'GO'
+            #if not self.first_start:
+            #    print 'WAIT...'
+            #else:
+            #    print 'GO'
             
 
             ch = cv2.waitKey(1)
+
+            if ch==ord('b'):
+                if len(self.list_camshift)==2:
+                    pickle.dump(self.list_camshift,open('color_instant.p','wb'))
+                    print 'Dump Success!'
+                else:
+                    print 'ni mei quan -_-'
+
             #if ch == 27:
             #    break
-            #if ch==ord('b'):
-            #    self.show_backproj=not self.show_backproj
             #if ch==ord('r'):
             #    self.BACKGROUND_PARAM=App.calc_HS(hsv)
             #    self.first_start=False
