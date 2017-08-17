@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 class fish_calibration(object):
     def __init__(self,img_size):
-        #data=pickle.load(open("cam_calibration.p",'rb'))
-        data=pickle.load(open("C:\\Users\\nuc\\Desktop\\src\\cam_calibration.p",'rb'))
+        data=pickle.load(open("cam_calibration.p",'rb'))
+        #data=pickle.load(open("C:\\Users\\nuc\\Desktop\\src\\cam_calibration.p",'rb'))
         mtx=data['mtx']
         dist=data['dist']
         dist=np.array([dist[0][0], dist[0][1], dist[0][2], dist[0][3], dist[0][4]/1.45])

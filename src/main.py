@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 import socket
+import pyHook
 # local module
 from fps import FPS
 from udp.myudp import MyUdp
@@ -50,13 +51,13 @@ class App(object):
         self.car_lost=False
         #self.count=0
         self.light=self.get_light()
-
+        self.JK_flag=False
         self.swicht=False
         #self.list_camshift.append(self.get_car('red.jpg',0))
         #self.list_camshift.append(self.get_car('yellow.jpg',1))
         #H,S
-        self.mask_avoid=cv2.cvtColor(cv2.imread('C:\\Users\\nuc\\Desktop\\src\\mask_avoid_1.bmp'),cv2.COLOR_BGR2GRAY)
-        #self.mask_avoid=cv2.cvtColor(cv2.imread('mask_avoid.bmp'),cv2.COLOR_BGR2GRAY)
+        #self.mask_avoid=cv2.cvtColor(cv2.imread('C:\\Users\\nuc\\Desktop\\src\\mask_avoid_1.bmp'),cv2.COLOR_BGR2GRAY)
+        self.mask_avoid=cv2.cvtColor(cv2.imread('mask_avoid_1.bmp'),cv2.COLOR_BGR2GRAY)
 
         self.BACKGROUND_PARAM=App.calc_HS(cv2.cvtColor(self.frame,cv2.COLOR_BGR2HSV))
         
@@ -77,7 +78,29 @@ class App(object):
         #self.mdp.client_address=('192.168.56.207', 8899)  
         cv2.namedWindow('TUCanshift')
         cv2.setMouseCallback('TUCanshift', self.onmouse)
+        hm=pyHook.HookManager()
+        hm.KeyDown=self.onKeyBoard
+        hm.HookKeyboard()
 
+    def onKeyBoard(self,event):
+        if event.Key=='K':
+            self.JK_flag=False
+        if event.Key=='J':
+            self.JK_flag=True
+        if event.Key=='Escape':
+            cv2.destroyAllWindows()
+            self.cam.release()
+            self.mdp.close()
+            import os
+            os._exit(0)
+        if event.Key=='W':
+            print 'W'
+            self.mdp.send_message('guidance',(0,5))
+        if event.Key=='S':
+            print 'S'
+            self.mdp.send_message('back_car',(0,0))
+
+        return True
     def onmouse(self, event, x, y, flags, param):
         if self.lock:
             if event == cv2.EVENT_RBUTTONDOWN:
@@ -100,6 +123,7 @@ class App(object):
                     self.list_camshift.append(self.newcamshift)
                 self.newcamshift=None
                 self.selection=None
+        return True
 
     def pop_camshift(self):
         if(len(self.list_camshift)<1):
@@ -353,32 +377,28 @@ class App(object):
             
 
             ch = cv2.waitKey(1)
-            if ch == 27:
-                break
+            #if ch == 27:
+            #    break
             #if ch==ord('b'):
             #    self.show_backproj=not self.show_backproj
-            if ch==ord('r'):
-                self.BACKGROUND_PARAM=App.calc_HS(hsv)
-                self.first_start=False
-            if ch==ord('w'):
-                self.mdp.send_message('guidance',(0,10))
-            if ch==ord('s'):
-                self.mdp.send_message('back_car',(0,0))
-            if ch==ord('['):
-                self.miste=not self.miste
-            if ch==ord('j'):
-                #self.first_start=False
-                while True:
-                    try:
-                        self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
-                        self.mdp.send_message('lost')
-                    except:
-                        print 'Doit_WiFi NOT FOUND'
-                    else:
-                        print 'NEW IP:%s' % self.mdp.client_address[0]
-                    ob=cv2.waitKey(20)
-                    if ob==ord('k'):
-                        break
+            #if ch==ord('r'):
+            #    self.BACKGROUND_PARAM=App.calc_HS(hsv)
+            #    self.first_start=False
+            #if ch==ord('w'):
+            #    self.mdp.send_message('guidance',(0,10))
+            #if ch==ord('s'):
+            #    self.mdp.send_message('back_car',(0,0))
+            #if ch==ord('['):
+            #    self.miste=not self.miste
+            while self.JK_flag:
+                try:
+                    self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
+                    self.mdp.send_message('lost')
+                except:
+                    print 'Doit_WiFi NOT FOUND'
+                else:
+                    print 'NEW IP:%s' % self.mdp.client_address[0]
+                    cv2.waitKey(30)
 
         cv2.destroyAllWindows()
         self.cam.release()
