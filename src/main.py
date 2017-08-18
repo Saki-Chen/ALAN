@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 import socket
-import pyHook
+#import pyHook
 import pickle
 # local module
 from fps import FPS
@@ -76,45 +76,39 @@ class App(object):
 
         #wifi模块IP
 
-        while True:
-            try:
-                self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
-                break
-            except:
-                print 'Doit_WiFi NOT FOUND'
+        try:
+            self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
+        except:
+            print 'Doit_WiFi NOT FOUND\nSET IP:192.168.8.100\nPlease check'
+            self.mdp.client_address=('192.168.8.100',8899)
 
         #新车
         #self.mdp.client_address=('192.168.56.207', 8899)  
         cv2.namedWindow('TUCanshift')
         cv2.setMouseCallback('TUCanshift', self.onmouse)
-        hm=pyHook.HookManager()
-        hm.KeyDown=self.onKeyBoard
-        hm.HookKeyboard()
+        #hm=pyHook.HookManager()
+        #hm.KeyDown=self.onKeyBoard
+        #hm.HookKeyboard()
 
-    def onKeyBoard(self,event):
-        if event.Key=='K':
-            self.JK_flag=False
-        if event.Key=='J':
-            self.JK_flag=True
-        if event.Key=='Escape':
-            cv2.destroyAllWindows()
-            self.cam.release()
-            self.mdp.close()
-            import os
-            os._exit(0)
-        if event.Key=='W':
-            print 'W'
-            self.mdp.send_message('guidance',(0,5))
-        if event.Key=='S':
-            print 'S'
-            self.mdp.send_message('back_car',(0,0))
-        #if event.Key=='B':
-        #    if len(self.list_camshift)==2:
-        #        pickle.dump(self.list_camshift,open("color_instant.p","wb"))
-        #        print 'Dump Success!'
+    #def onKeyBoard(self,event):
+    #    if event.Key=='K':
+    #        self.JK_flag=False
+    #    if event.Key=='J':
+    #        self.JK_flag=True
+    #    if event.Key=='Escape':
+    #        cv2.destroyAllWindows()
+    #        self.cam.release()
+    #        self.mdp.close()
+    #        import os
+    #        os._exit(0)
+    #    if event.Key=='W':
+    #        print 'W'
+    #        self.mdp.send_message('guidance',(0,5))
+    #    if event.Key=='S':
+    #        print 'S'
+    #        self.mdp.send_message('back_car',(0,0))
+    #    return True
 
-
-        return True
     def onmouse(self, event, x, y, flags, param):
         if self.lock:
             if event == cv2.EVENT_RBUTTONDOWN:
@@ -236,7 +230,7 @@ class App(object):
                 #print self.sumtime
                 
             if self.sumtime>0.5 and self.first_start:
-                print 'lost light GUIDANCE'
+                #print 'lost light GUIDANCE'
                 self.track_box=[(self.frame.shape[1]/2,self.frame.shape[0]/2)]
             if self.sumtime>3600:
                 self.sumtime=36                    
@@ -355,7 +349,7 @@ class App(object):
                 if m[0]>-50 and m[0]<0:
                     m=(-50,m[1])
                 self.mdp.send_message(o,m)
-                print 'car LOST guidance'
+                #print 'car LOST guidance'
 
             if len(self.track_box) >0:
                 for x in self.track_box:
@@ -399,26 +393,30 @@ class App(object):
                 else:
                     print 'ni mei quan -_-'
 
-            #if ch == 27:
-            #    break
+            if ch == 27:
+                break
             #if ch==ord('r'):
             #    self.BACKGROUND_PARAM=App.calc_HS(hsv)
             #    self.first_start=False
-            #if ch==ord('w'):
-            #    self.mdp.send_message('guidance',(0,10))
-            #if ch==ord('s'):
-            #    self.mdp.send_message('back_car',(0,0))
+            if ch==ord('w'):
+                self.mdp.send_message('guidance',(0,10))
+            if ch==ord('s'):
+                self.mdp.send_message('back_car',(0,0))
             #if ch==ord('['):
             #    self.miste=not self.miste
-            while self.JK_flag:
-                try:
-                    self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
-                    self.mdp.send_message('lost')
-                except:
-                    print 'Doit_WiFi NOT FOUND'
-                else:
-                    print 'NEW IP:%s' % self.mdp.client_address[0]
-                    cv2.waitKey(30)
+            if ch==ord('j'):
+                while True:
+                    try:                       
+                        self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
+                        self.mdp.send_message('lost')
+                    except:
+                        print 'Doit_WiFi NOT FOUND'
+                    else:
+                        print 'NEW IP:%s' % self.mdp.client_address[0]
+                    ch=cv2.waitKey(15)
+                    if ch==ord('k'):
+                        break
+                        
 
         cv2.destroyAllWindows()
         self.cam.release()
