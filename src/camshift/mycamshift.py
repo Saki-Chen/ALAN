@@ -219,9 +219,9 @@ class mycamshift(object):
         h_max_left=h_max-1
         h_max_right=h_max+1
         if h_max_left<0:
-            h_max_left=self.HSV_CHANNELS[0][0]-1
+            h_max_left=self.HSV_CHANNELS[0][0]+h_max_left
         if h_max_right>self.HSV_CHANNELS[0][0]-1:
-            h_max_right=0
+            h_max_right=h_max_right-self.HSV_CHANNELS[0][0]
         hist[h_max_left]=hist[h_max]
         hist[h_max_right]=hist[h_max]
 
@@ -282,6 +282,7 @@ class mycamshift(object):
             #print('Target %s is Lost' % self.ID)
             self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
             return None
+        
         #mask_roi=mask.copy()
         #mask_roi[:,:]=0
         #try:
@@ -289,17 +290,25 @@ class mycamshift(object):
         #except:
         #    return None
         #cv2.imshow('wkk',mask_roi)
-
         #check_hist=cv2.calcHist([hsv],[0],mask_roi,[self.HSV_CHANNELS[0][0]],self.HSV_CHANNELS[0][1])
+        #check_hist=cv2.normalize(check_hist, check_hist, 0, 1, cv2.NORM_MINMAX)
         #bin_count = check_hist.shape[0]
-        #bin_w = 24
+        #bin_w = self.HSV_CHANNELS[0][0]
         #img = np.zeros((256, bin_count*bin_w, 3), np.uint8)
         #for i in xrange(bin_count):
-        #    h = int(self.__hist[i])
+        #    h = int(check_hist[i])
         #    cv2.rectangle(img, (i*bin_w+2, 255), ((i+1)*bin_w-2, 255-h), (int(180.0*i/bin_count), 255, 255), -1)
-        #return cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
-
-
+        #cv2.imshow('check_img',cv2.cvtColor(img, cv2.COLOR_HSV2BGR))
+        #for i in xrange(1):
+        #    m=cv2.compareHist(self.histHSV[0],check_hist,i)
+        #    print m
+        #    if m>0.7:
+        #        pass
+        #    else:
+        #        pass
+        #        self.__track_window=(0,0,self.__framesize[1],self.__framesize[0])
+        #        return None
+                      
         return track_box
 
     def go_once_gray(self,img_gray):
