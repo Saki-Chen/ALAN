@@ -170,7 +170,10 @@ class App(object):
         H = H_hist.argmax(axis=None, out=None)
         S_hist = cv2.calcHist([hsv],[1], None,[255],[0,255])
         S = S_hist.argmax(axis=None, out=None)
-        return (H,S)
+        V_hist = cv2.calcHist([hsv],[2], None,[255],[0,255])
+        V = V_hist.argmax(axis=None, out=None)
+        
+        return (H,S,V)
         
     def run(self):
         while True:  
@@ -194,6 +197,7 @@ class App(object):
 
             #注掉使用背景参数的静态方法
             self.BACKGROUND_PARAM=App.calc_HS(hsv)
+            print self.BACKGROUND_PARAM
 
             mask=mycamshift.filte_background_color(hsv,self.BACKGROUND_PARAM,offset1=16.,offset2=90., iterations=3)
             if self.miste:
