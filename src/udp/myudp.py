@@ -17,12 +17,15 @@ class MyUdp(object):
     def __init__(self):
         self.udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
         self.client_address=None
+        self.pause=False
     
     def bind_host(self):
         self.address = (MyUdp.getlocalIP(), 8899)  
         self.udp.bind(self.address)    
 
     def send_message(self,order,val=(0,0)):
+        if self.pause:
+            order='lost'
         #val=(val1,val2) val1:-128~127 val2:0~255
         if order in MyUdp.commands and self.client_address is not None:
             self.udp.sendto(MyUdp.getbyte(order,val),self.client_address)
