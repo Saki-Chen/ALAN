@@ -421,18 +421,24 @@ class App(object):
                 #    ch=cv2.waitKey(15)
                 #    if ch==ord('k'):
                 #        break
+            if ch==ord('t'):
+                while True:
+                    ch=cv2.waitKey(20)
+                    if ch == ord('k'):
+                        break
+                    try:
+                        self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
+                        self.mdp.send_message('lost')
+                    except:
+                        print 'Doit_WiFi NOT FOUND'
+                    else:
+                        print 'NEW IP:%s' % self.mdp.client_address[0]
 
             if ch==ord('k'):
                 self.mdp.pause=False
             if self.mdp.pause:
                 cv2.putText(imshow_vis, 'PAUSE', (400, 230),cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255,255), 1, cv2.LINE_AA)
-                try:
-                    self.mdp.client_address=(socket.gethostbyname('Doit_WiFi'),8899)  
-                    self.mdp.send_message('lost')
-                except:
-                    print 'Doit_WiFi NOT FOUND'
-                else:
-                    print 'NEW IP:%s' % self.mdp.client_address[0]
+                self.mdp.send_message('lost')
             if self.miste:
                 cv2.imshow('TUCanshift',imshow_vis)
 
