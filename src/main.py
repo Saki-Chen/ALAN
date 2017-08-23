@@ -401,7 +401,6 @@ class App(object):
             if ch==ord('r'):
                 self.BACKGROUND_PARAM=App.calc_HS(hsv)
                 print self.BACKGROUND_PARAM
-                #self.first_start=False
             if ch==ord('w'):
                 self.mdp.send_message('guidance',(0,10))
             if ch==ord('s'):
