@@ -59,7 +59,7 @@ class mycamshift(object):
             ch_prob.append(prob)
      
         ch_back_proj_prob.append(
-            cv2.addWeighted(ch_prob[0], 0.5, ch_prob[1], 0.5, 0))
+            cv2.addWeighted(ch_prob[0], 1.0, ch_prob[1], 0., 0))
         #cv2.imshow('cb1', ch_back_proj_prob[0])
         ch_back_proj_prob.append(
             cv2.addWeighted(ch_prob[0], 0.5, ch_prob[2], 0.5, 0))
@@ -102,7 +102,7 @@ class mycamshift(object):
         #back_proj_prob=ch_back_proj_prob[0]
         #back_proj_prob=ch_prob[2]
         #Acht!
-        ret, back_proj_prob = cv2.threshold(back_proj_prob,250, 255,
+        ret, back_proj_prob = cv2.threshold(back_proj_prob,230, 255,
                                             cv2.THRESH_BINARY)
         
         back_proj_prob = cv2.morphologyEx(
@@ -129,7 +129,11 @@ class mycamshift(object):
         #V_hist = cv2.calcHist([hsv],[2], None,[255],[0,255])
         #V = V_hist.argmax(axis=None, out=None)
 
-        mask = cv2.inRange(hsv, np.array((BACKGROUND_PARAM[0]-offset1,BACKGROUND_PARAM[1]-offset2,0.)), np.array((BACKGROUND_PARAM[0]+offset1,BACKGROUND_PARAM[1]+offset2,255.)))
+        #mask = cv2.inRange(hsv, np.array((BACKGROUND_PARAM[0]-offset1,BACKGROUND_PARAM[1]-offset2,0.)), np.array((BACKGROUND_PARAM[0]+offset1,BACKGROUND_PARAM[1]+offset2,255.)))
+        mask = cv2.inRange(hsv, np.array((BACKGROUND_PARAM[0]-offset1,100.,0.)), np.array((BACKGROUND_PARAM[0]+offset1,255.,255.)))
+        #mask = cv2.inRange(hsv, np.array((100.,120.,0.)), np.array((124.,255.,255.)))
+        
+        cv2.imshow('mask0',mask)
         mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=3, borderType=cv2.BORDER_REPLICATE)	
         mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)),iterations=1, borderType=cv2.BORDER_REPLICATE)
 	    #mask=cv2.dilate(mask,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(1,1)),iterations=5, borderType=cv2.BORDER_REPLICATE)

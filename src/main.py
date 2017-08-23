@@ -196,10 +196,10 @@ class App(object):
             hsv=cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
 
             #注掉使用背景参数的静态方法
-            self.BACKGROUND_PARAM=App.calc_HS(hsv)
-            print self.BACKGROUND_PARAM
+            #self.BACKGROUND_PARAM=App.calc_HS(hsv)
+            #print self.BACKGROUND_PARAM
 
-            mask=mycamshift.filte_background_color(hsv,self.BACKGROUND_PARAM,offset1=16.,offset2=90., iterations=3)
+            mask=mycamshift.filte_background_color(hsv,self.BACKGROUND_PARAM,offset1=16.,offset2=1000., iterations=3)
             if self.miste:
                 cv2.imshow('fore_ground',mask)
 
@@ -398,9 +398,10 @@ class App(object):
 
             if ch == 27:
                 break
-            #if ch==ord('r'):
-            #    self.BACKGROUND_PARAM=App.calc_HS(hsv)
-            #    self.first_start=False
+            if ch==ord('r'):
+                self.BACKGROUND_PARAM=App.calc_HS(hsv)
+                print self.BACKGROUND_PARAM
+                #self.first_start=False
             if ch==ord('w'):
                 self.mdp.send_message('guidance',(0,10))
             if ch==ord('s'):
